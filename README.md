@@ -3,6 +3,18 @@ The heart of this library is `apache-poi`
 
 Thanks to `templ4docx` you can read the entire content (as simple String) of docx file, you can find all variables, register variables pattern and you can fill docx template file by your own map of variables.
 
+The recommended way to get started using templ4docx in your project is with a dependency management system – the snippet below can be copied and pasted into your build.
+```
+<dependency>
+	<groupId>pl.jsolve</groupId>
+	<artifactId>templ4docx</artifactId>
+	<version>1.0.0</version>
+</dependency>
+```
+
+[Direct link to jar file ](https://oss.sonatype.org/content/groups/public/pl/jsolve/templ4docx/1.0.0/templ4docx-1.0.0.jar)
+
+
 ## Example usage
 
 ```
