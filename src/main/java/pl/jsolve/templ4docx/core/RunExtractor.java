@@ -67,16 +67,27 @@ public class RunExtractor {
                         notRecognizedVariable += text;
                     }
 
-                    if (!Strings.indexesOf(text, variablePattern.getPrefix()).isEmpty()
+                    String prefix = getFirstChar(variablePattern.getPrefix());
+                    if (!Strings.indexesOf(text, prefix).isEmpty()
                             && Strings.indexesOf(text, variablePattern.getSuffix()).isEmpty()) {
                         notRecognizedVariableStartIndex = i;
                         notRecognizedVariable = text;
-                        Integer prefixIndex = Strings.indexesOf(text, variablePattern.getPrefix()).get(0);
+                        List<Integer> indexesOf = Strings.indexesOf(text, prefix);
+                        Integer prefixIndex = indexesOf.get(0);
                         notRecognizedVariablePrefix = text.substring(prefixIndex);
                     }
                 }
             }
         }
+    }
+
+    private String getFirstChar(String prefix) {
+        if (prefix.length() == 1) {
+            return prefix;
+        } else if (prefix.startsWith("\\") && prefix.length() > 1) {
+            return prefix.substring(0, 2);
+        }
+        return prefix.substring(0, 1);
     }
 
 }

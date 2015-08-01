@@ -117,6 +117,69 @@ public class RunExtractorTest {
         assertThat(runs.get(4).getText(0)).isEqualTo("");
     }
 
+    @Test
+    public void shouldReplaceVariable6() throws Exception {
+        // given
+        List<XWPFRun> runs = prepareRuns("$", "{", "name", "}${", "age", "}");
+        String[] keysArray = {"${age}", "${name}"};
+        String[] valuesArray = {"15", "Lukasz"};
+        VariablePattern variablePattern = new VariablePattern("${", "}");
+
+        // when
+        extractor.execute(runs, keysArray, valuesArray, variablePattern);
+
+        // then
+        assertThat(runs).hasSize(6);
+        assertThat(runs.get(0).getText(0)).isEqualTo("Lukasz");
+        assertThat(runs.get(1).getText(0)).isEqualTo("");
+        assertThat(runs.get(2).getText(0)).isEqualTo("");
+        assertThat(runs.get(3).getText(0)).isEqualTo("15");
+        assertThat(runs.get(4).getText(0)).isEqualTo("");
+        assertThat(runs.get(5).getText(0)).isEqualTo("");
+    }
+    
+    @Test
+    public void shouldReplaceVariable7() throws Exception {
+        // given
+        List<XWPFRun> runs = prepareRuns("$", "{", "name", "}$${", "age", "}");
+        String[] keysArray = {"${age}", "${name}"};
+        String[] valuesArray = {"15", "Lukasz"};
+        VariablePattern variablePattern = new VariablePattern("${", "}");
+
+        // when
+        extractor.execute(runs, keysArray, valuesArray, variablePattern);
+
+        // then
+        assertThat(runs).hasSize(6);
+        assertThat(runs.get(0).getText(0)).isEqualTo("Lukasz");
+        assertThat(runs.get(1).getText(0)).isEqualTo("");
+        assertThat(runs.get(2).getText(0)).isEqualTo("");
+        assertThat(runs.get(3).getText(0)).isEqualTo("$15");
+        assertThat(runs.get(4).getText(0)).isEqualTo("");
+        assertThat(runs.get(5).getText(0)).isEqualTo("");
+    }
+    
+    @Test
+    public void shouldReplaceVariable8() throws Exception {
+        // given
+        List<XWPFRun> runs = prepareRuns("$", "{", "name", "}${${", "age", "}");
+        String[] keysArray = {"${age}", "${name}"};
+        String[] valuesArray = {"15", "Lukasz"};
+        VariablePattern variablePattern = new VariablePattern("${", "}");
+
+        // when
+        extractor.execute(runs, keysArray, valuesArray, variablePattern);
+
+        // then
+        assertThat(runs).hasSize(6);
+        assertThat(runs.get(0).getText(0)).isEqualTo("Lukasz");
+        assertThat(runs.get(1).getText(0)).isEqualTo("");
+        assertThat(runs.get(2).getText(0)).isEqualTo("");
+        assertThat(runs.get(3).getText(0)).isEqualTo("${15");
+        assertThat(runs.get(4).getText(0)).isEqualTo("");
+        assertThat(runs.get(5).getText(0)).isEqualTo("");
+    }
+
     private List<XWPFRun> prepareRuns(String... values) {
         List<XWPFRun> runs = Collections.newArrayList();
         for (String value : values) {
