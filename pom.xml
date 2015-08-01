@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.jsolve</groupId>
 	<artifactId>templ4docx</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>templ4docx</name>
 	<description>TEMPL4DOCX - Utility library for filling templates in docx files</description>
 	<url>https://github.com/jsolve/templ4docx</url>
@@ -106,7 +106,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+	<!-- 		<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>1.6.3</version>
@@ -156,21 +156,21 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
-		<extensions>
+		<!-- <extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ftp</artifactId>
 				<version>${wagon-ftp.version}</version>
 			</extension>
-		</extensions>
+		</extensions>  -->
 	</build>
 
 	<developers>
 		<developer>
 			<id>lstypka</id>
-			<name>Łukasz Stypka</name>
+			<name>Lukasz Stypka</name>
 			<email>lukasz.stypka@gmail.com</email>
 			<url>http://jsolve.pl</url>
 			<organization>jsolve</organization>
