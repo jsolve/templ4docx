@@ -8,7 +8,7 @@ The recommended way to get started using templ4docx in your project is a depende
 <dependency>
 	<groupId>pl.jsolve</groupId>
 	<artifactId>templ4docx</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 </dependency>
 ```
 
