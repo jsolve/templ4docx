@@ -39,9 +39,9 @@ public class RunExtractor {
                     // check whether variable is started but not ended
 
                     if (notRecognizedVariableStartIndex != -1) {
-                        if (!Strings.indexesOf(text, variablePattern.getSuffix()).isEmpty()) {
-                            notRecognizedVariable += text.substring(0,
-                                    Strings.indexesOf(text, variablePattern.getSuffix()).get(0) + 1);
+                        List<Integer> suffixIndexesOf = Strings.indexesOf(text, variablePattern.getSuffix());
+                        if (!suffixIndexesOf.isEmpty()) {
+                            notRecognizedVariable += text.substring(0, suffixIndexesOf.get(0) + 1);
                             notRecognizedVariable = StringUtils
                                     .replaceEach(notRecognizedVariable, keyArray, valueArray);
                             XWPFRun startRun = runs.get(notRecognizedVariableStartIndex);
@@ -55,7 +55,7 @@ public class RunExtractor {
                                 runs.get(j).setText("", 0);
                             }
                             text = runs.get(i).getText(0);
-                            Integer suffixIndex = Strings.indexesOf(text, variablePattern.getSuffix()).get(0);
+                            Integer suffixIndex = suffixIndexesOf.get(0);
                             runs.get(i).setText(text.substring(suffixIndex + 1), 0);
                             i = notRecognizedVariableStartIndex;
 
@@ -68,12 +68,11 @@ public class RunExtractor {
                     }
 
                     String prefix = getFirstChar(variablePattern.getPrefix());
-                    if (!Strings.indexesOf(text, prefix).isEmpty()
-                            && Strings.indexesOf(text, variablePattern.getSuffix()).isEmpty()) {
+                    List<Integer> prefixIndexesOf = Strings.indexesOf(text, prefix);
+                    if (!prefixIndexesOf.isEmpty() && Strings.indexesOf(text, variablePattern.getSuffix()).isEmpty()) {
                         notRecognizedVariableStartIndex = i;
                         notRecognizedVariable = text;
-                        List<Integer> indexesOf = Strings.indexesOf(text, prefix);
-                        Integer prefixIndex = indexesOf.get(0);
+                        Integer prefixIndex = prefixIndexesOf.get(0);
                         notRecognizedVariablePrefix = text.substring(prefixIndex);
                     }
                 }
