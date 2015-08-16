@@ -1,0 +1,5 @@
+pl\jsolve\templ4docx\core\VariablePattern.class
+pl\jsolve\templ4docx\core\DocxTemplate.class
+pl\jsolve\templ4docx\core\VariablesExtractor.class
+pl\jsolve\templ4docx\core\Docx.class
+pl\jsolve\templ4docx\exception\OpenDocxException.class

@@ -1,29 +1,29 @@
-Za≥πcznik nr 5
+ÔªøZa≈ÇƒÖcznik nr 5
 
               #{imie} #{nazwisko}		
-(imiÍ i nazwisko cz≥onka rodziny)		
+(imiƒô i nazwisko cz≈Çonka rodziny)		
 
 
 
-Oúwiadczenie cz≥onka rodziny o dochodzie podlegajπcym opodatkowaniu podatkiem dochodowym od osÛb fizycznych na zasadach okreúlonych 
-w art. 27, 30B, 30c, i 30e ustawy z dnia 26 lipca 1991 r. o podatku dochodowym od osÛb fizycznych, osiπgniÍtym w roku kalendarzowym poprzedzajπcym okres zasi≥kowy
+O≈õwiadczenie cz≈Çonka rodziny o dochodzie podlegajƒÖcym opodatkowaniu podatkiem dochodowym od os√≥b fizycznych na zasadach okre≈õlonych 
+w art. 27, 30B, 30c, i 30e ustawy z dnia 26 lipca 1991 r. o podatku dochodowym od os√≥b fizycznych, osiƒÖgniƒôtym w roku kalendarzowym poprzedzajƒÖcym okres zasi≈Çkowy
 
 
-Oúwiadczam, øe w roku podatkowym		
+O≈õwiadczam, ≈ºe w roku podatkowym		
 		
-dochÛd*) wyniÛs≥ 	#{dochodzl}	z≥	#{dochodgr}	gr.
-podatek naleøy wyniÛs≥	#{podatekzl}	z≥	#{podatekgr}	gr.
-sk≥adki na ubezpieczenie spo≥eczne odliczone od dochodu wynios≥y	#{skladkizl}	z≥	#{skladkigr}	gr.
+doch√≥d*) wyni√≥s≈Ç 	#{dochodzl}	z≈Ç	#{dochodgr}	gr.
+podatek nale≈ºy wyni√≥s≈Ç	#{podatekzl}	z≈Ç	#{podatekgr}	gr.
+sk≈Çadki na ubezpieczenie spo≈Çeczne odliczone od dochodu wynios≈Çy	#{skladkizl}	z≈Ç	#{skladkigr}	gr.
 
 
 
 
-Oúwiadczam, øe jestem úwiadomy / úwiadoma odpowiedzialnoúci karnej za z≥oøenie fa≥szywego oúwiadczenia.
+O≈õwiadczam, ≈ºe jestem ≈õwiadomy / ≈õwiadoma odpowiedzialno≈õci karnej za z≈Ço≈ºenie fa≈Çszywego o≈õwiadczenia.
 
 
 
 			#{miejscowosc} #{data}		
-(miejscowoúÊ, data)		(podpis cz≥onka rodziny sk≥adajπcego oúwiadczenie)
+(miejscowo≈õƒá, data)		(podpis cz≈Çonka rodziny sk≈ÇadajƒÖcego o≈õwiadczenie)
 
 
 
@@ -31,4 +31,4 @@ Oúwiadczam, øe jestem úwiadomy / úwiadoma odpowiedzialnoúci karnej za z≥oøenie f
 
 
 
-*) PrzychÛd pomniejszony o koszty uzyskania przychodu, bez pomniejszania o sk≥adki na ubezpieczenia spo≥eczne i zdrowotne oraz bez pomniejszania o naleøny podatek dochodowy.
+*) Przych√≥d pomniejszony o koszty uzyskania przychodu, bez pomniejszania o sk≈Çadki na ubezpieczenia spo≈Çeczne i zdrowotne oraz bez pomniejszania o nale≈ºny podatek dochodowy.

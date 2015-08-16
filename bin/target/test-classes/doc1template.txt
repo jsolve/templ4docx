@@ -1,0 +1,34 @@
+Za³¹cznik nr 5
+
+              #{imie} #{nazwisko}		
+(imiê i nazwisko cz³onka rodziny)		
+
+
+
+Oœwiadczenie cz³onka rodziny o dochodzie podlegaj¹cym opodatkowaniu podatkiem dochodowym od osób fizycznych na zasadach okreœlonych 
+w art. 27, 30B, 30c, i 30e ustawy z dnia 26 lipca 1991 r. o podatku dochodowym od osób fizycznych, osi¹gniêtym w roku kalendarzowym poprzedzaj¹cym okres zasi³kowy
+
+
+Oœwiadczam, ¿e w roku podatkowym		
+		
+dochód*) wyniós³ 	#{dochodzl}	z³	#{dochodgr}	gr.
+podatek nale¿y wyniós³	#{podatekzl}	z³	#{podatekgr}	gr.
+sk³adki na ubezpieczenie spo³eczne odliczone od dochodu wynios³y	#{skladkizl}	z³	#{skladkigr}	gr.
+
+
+
+
+Oœwiadczam, ¿e jestem œwiadomy / œwiadoma odpowiedzialnoœci karnej za z³o¿enie fa³szywego oœwiadczenia.
+
+
+
+			#{miejscowosc} #{data}		
+(miejscowoœæ, data)		(podpis cz³onka rodziny sk³adaj¹cego oœwiadczenie)
+
+
+
+
+
+
+
+*) Przychód pomniejszony o koszty uzyskania przychodu, bez pomniejszania o sk³adki na ubezpieczenia spo³eczne i zdrowotne oraz bez pomniejszania o nale¿ny podatek dochodowy.

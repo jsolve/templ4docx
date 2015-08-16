@@ -12,7 +12,7 @@ The recommended way to get started using templ4docx in your project is a depende
 </dependency>
 ```
 
-[Direct link to jar file ](https://oss.sonatype.org/content/groups/public/pl/jsolve/templ4docx/1.0.0/templ4docx-1.0.0.jar)
+[Direct link to jar file ](https://oss.sonatype.org/content/groups/public/pl/jsolve/templ4docx/1.0.1/templ4docx-1.0.1.jar)
 
 
 ## Example usage
