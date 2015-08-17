@@ -35,8 +35,8 @@ docx.save("lstypka.docx");
 
 More details:
 
-[Text Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/)
-[Image Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/)
-[Bullet List Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/)
-[Table Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/)
+* [Text Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/) <br />
+* [Image Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/) <br />
+* [Bullet List Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/) <br />
+* [Table Variables](http://jsolve.github.io/java/templ4docx-2-0-0-text-variables/) <br />
 
