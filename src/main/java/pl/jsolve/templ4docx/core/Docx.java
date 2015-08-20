@@ -12,6 +12,7 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import pl.jsolve.sweetener.io.Resources;
 import pl.jsolve.templ4docx.cleaner.DocumentCleaner;
 import pl.jsolve.templ4docx.exception.OpenDocxException;
+import pl.jsolve.templ4docx.executor.ConditionExecutor;
 import pl.jsolve.templ4docx.executor.DocumentExecutor;
 import pl.jsolve.templ4docx.extractor.VariablesExtractor;
 import pl.jsolve.templ4docx.variable.Variables;
@@ -91,6 +92,8 @@ public class Docx implements Serializable {
      */
     public void fillTemplate(Variables variables) {
         documentCleaner.clean(this, variables, variablePattern);
+        ConditionExecutor conditionExecutor = new ConditionExecutor(variables);
+        conditionExecutor.execute(this);
         DocumentExecutor documentExecutor = new DocumentExecutor(variables);
         documentExecutor.execute(this);
     }
