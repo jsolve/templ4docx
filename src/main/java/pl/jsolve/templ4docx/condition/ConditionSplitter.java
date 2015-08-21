@@ -4,6 +4,10 @@ import pl.jsolve.templ4docx.exception.UnsupportedOperationTypeException;
 import pl.jsolve.templ4docx.util.Condition;
 import pl.jsolve.templ4docx.util.OperationType;
 
+/**
+ * Class responsible for parse condition string to Condition object
+ * @author Lukasz Stypka
+ */
 public class ConditionSplitter {
 
     public Condition splitCondition(String text) {
@@ -27,9 +31,9 @@ public class ConditionSplitter {
         text = text.substring(operationType.getText().length()).trim();
 
         // get value
-        String value = getValue(text);
+        Object value = getValue(text, operationType);
         condition.setValue(value);
-        
+
         return condition;
     }
 
@@ -68,7 +72,13 @@ public class ConditionSplitter {
         throw new UnsupportedOperationTypeException("Unrecognized operation : " + text);
     }
 
-    private String getValue(String text) {
+    /**
+     * Parse string to appropriate value object. lt, gt, le, ge require number value
+     * @param text
+     * @param operationType
+     * @return Object parsed value object
+     */
+    private Object getValue(String text, OperationType operationType) {
         text = text.trim();
 
         // remove quote mark
@@ -92,6 +102,35 @@ public class ConditionSplitter {
             text = text.substring(0, text.length() - 1);
         }
 
+        if (operationType == OperationType.GE || operationType == OperationType.GT || operationType == OperationType.LE
+                || operationType == OperationType.LT) {
+            if (!isNumeric(text)) {
+                throw new UnsupportedOperationTypeException(text + " is not a number");
+            }
+            if (isInteger(text)) {
+                return Integer.valueOf(text);
+            }
+            return Double.valueOf(text);
+        }
+
         return text;
+    }
+
+    /**
+     * Check if string is integer
+     * @param str
+     * @return
+     */
+    private boolean isInteger(String str) {
+        return str.matches("-?\\d+?");
+    }
+
+    /**
+     * Check if variable is a number (Integer or Double)
+     * @param str
+     * @return
+     */
+    private boolean isNumeric(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");
     }
 }
