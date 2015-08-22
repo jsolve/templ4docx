@@ -7,6 +7,7 @@ import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
+import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.sweetener.text.Strings;
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.insert.ConditionInsert;
@@ -18,9 +19,11 @@ public class ConditionExecutor {
     private final static String CONDITION_SUFFIX = "</docx:if>";
 
     private Variables variables;
+    private ParagraphRemover paragraphRemover;
 
     public ConditionExecutor(Variables variables) {
         this.variables = variables;
+        this.paragraphRemover = new ParagraphRemover();
     }
 
     public void execute(Docx docx) {
@@ -28,7 +31,8 @@ public class ConditionExecutor {
 
         while (true) {
             ConditionInsert conditionInsert = findConditionInsert(xwpfDocument.getBodyElements());
-            if (!conditionInsert.isFound()) {
+            if (!conditionInsert.isFound() || conditionInsert.getStartIndex() == null
+                    || conditionInsert.getEndIndex() == null) {
                 break;
             }
             removeParagraphs(xwpfDocument, conditionInsert);
@@ -55,14 +59,16 @@ public class ConditionExecutor {
                         List<Integer> indexesOf = Strings.indexesOf(paragraphText, ">");
                         int closeTagIndex = -1;
                         for (Integer index : indexesOf) {
-                            if(index < startIndex) {
+                            if (index < startIndex) {
                                 continue;
                             }
-                            if(index > 0 && paragraphText.charAt(index - 1) != '/') {
+                            if (index > 0 && paragraphText.charAt(index - 1) != '/') {
                                 closeTagIndex = index;
+                                break;
                             }
                         }
                         conditionInsert.setCondition(paragraphText.substring(startIndex, closeTagIndex + 1));
+                        deepIndex++;
                     } else {
                         deepIndex++;
                     }
@@ -83,20 +89,26 @@ public class ConditionExecutor {
                 }
             }
         }
+        conditionInsert.setFound(found);
         return conditionInsert;
     }
 
     private void removeParagraphs(XWPFDocument xwpfDocument, ConditionInsert conditionInsert) {
         Integer startIndex = conditionInsert.getStartIndex();
         Integer endIndex = conditionInsert.getEndIndex();
-        for (int i = endIndex; i >= startIndex; i--) {
-            xwpfDocument.removeBodyElement(i);
+
+        List<IBodyElement> documentBodyElements = xwpfDocument.getBodyElements();
+        List<IBodyElement> listOfBodyElements = Collections.newArrayList();
+        if(startIndex == endIndex) {
+            listOfBodyElements.add(documentBodyElements.get(startIndex));
+        } else {
+            for (int i = startIndex; i < endIndex; i++) {
+                listOfBodyElements.add(documentBodyElements.get(i));
+            }
         }
+        IBodyElement[] bodyElements = listOfBodyElements.toArray(new IBodyElement[0]);
 
-    }
-
-    private void removeConditionTagsFromParagraph(XWPFParagraph paragraph) {
-
+        paragraphRemover.removeConditionTagsFromParagraphs(conditionInsert, xwpfDocument, false, bodyElements);
     }
 
 }
