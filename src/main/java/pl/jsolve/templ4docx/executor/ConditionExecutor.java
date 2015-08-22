@@ -7,6 +7,7 @@ import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
+import pl.jsolve.sweetener.text.Strings;
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.insert.ConditionInsert;
 import pl.jsolve.templ4docx.variable.Variables;
@@ -30,13 +31,12 @@ public class ConditionExecutor {
             if (!conditionInsert.isFound()) {
                 break;
             }
-
             removeParagraphs(xwpfDocument, conditionInsert);
         }
     }
 
     private ConditionInsert findConditionInsert(List<IBodyElement> bodyElements) {
-      
+
         ConditionInsert conditionInsert = new ConditionInsert();
 
         int deepIndex = 0;
@@ -51,6 +51,18 @@ public class ConditionExecutor {
                         found = true;
                         conditionInsert.setStartIndex(i);
                         conditionInsert.setStartParagraph(paragraph);
+                        int startIndex = paragraphText.indexOf(CONDITION_PREFIX);
+                        List<Integer> indexesOf = Strings.indexesOf(paragraphText, ">");
+                        int closeTagIndex = -1;
+                        for (Integer index : indexesOf) {
+                            if(index < startIndex) {
+                                continue;
+                            }
+                            if(index > 0 && paragraphText.charAt(index - 1) != '/') {
+                                closeTagIndex = index;
+                            }
+                        }
+                        conditionInsert.setCondition(paragraphText.substring(startIndex, closeTagIndex + 1));
                     } else {
                         deepIndex++;
                     }
@@ -80,7 +92,11 @@ public class ConditionExecutor {
         for (int i = endIndex; i >= startIndex; i--) {
             xwpfDocument.removeBodyElement(i);
         }
+
     }
 
-  
+    private void removeConditionTagsFromParagraph(XWPFParagraph paragraph) {
+
+    }
+
 }

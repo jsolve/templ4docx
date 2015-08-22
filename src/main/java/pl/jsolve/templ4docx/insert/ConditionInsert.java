@@ -8,17 +8,27 @@ public class ConditionInsert {
     private Integer startIndex;
     private XWPFParagraph endParagraph;
     private Integer endIndex;
+    private String condition;
     private boolean found;
 
     public ConditionInsert() {
     }
 
-    public ConditionInsert(XWPFParagraph startParagraph, Integer startIndex, XWPFParagraph endParagraph,
-            Integer endIndex) {
+    public ConditionInsert(XWPFParagraph startParagraph, String condition, Integer startIndex,
+            XWPFParagraph endParagraph, Integer endIndex) {
+        this.condition = condition;
         this.startParagraph = startParagraph;
         this.startIndex = startIndex;
         this.endParagraph = endParagraph;
         this.endIndex = endIndex;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     public XWPFParagraph getStartParagraph() {
