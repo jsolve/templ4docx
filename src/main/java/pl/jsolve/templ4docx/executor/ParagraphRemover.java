@@ -2,12 +2,14 @@ package pl.jsolve.templ4docx.executor;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.BodyElementType;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
+import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.sweetener.text.Strings;
 import pl.jsolve.templ4docx.insert.ConditionInsert;
 
@@ -45,7 +47,10 @@ public class ParagraphRemover {
         if (!conditionFulfilled) {
             endTagIndex = paragraphText.length();
         }
-        removeFromParagraph((XWPFParagraph)bodyElements[0], startTagIndex, endTagIndex);
+        
+        int _startTagIndex = startTagIndex;
+        int _endTagIndex = endTagIndex;
+
 
         // remove end condition tag
         XWPFParagraph lastParagraph = (XWPFParagraph) bodyElements[bodyElements.length - 1];
@@ -56,6 +61,8 @@ public class ParagraphRemover {
             startCloseTagIndex = 0;
         }
         removeFromParagraph(lastParagraph, startCloseTagIndex, endCloseTagIndex);
+
+        removeFromParagraph((XWPFParagraph)bodyElements[0], _startTagIndex, _endTagIndex);
 
         if (numberOfParagraphs > 2) {
 
@@ -121,11 +128,12 @@ public class ParagraphRemover {
 
     private void removeFromParagraph(XWPFParagraph paragraph, int from, int to) {
         int totalLength = 0;
+        List<Integer> runsToRemove = Collections.newArrayList();
         for (int i = 0; i < paragraph.getRuns().size(); i++) {
             XWPFRun run = paragraph.getRuns().get(i);
             String runText = run.getText(0);
             if(runText == null) {
-                continue;
+                runText = "";
             }
             int runTextLength = runText.length();
             if (from > totalLength + runTextLength || to < totalLength) {
@@ -147,9 +155,20 @@ public class ParagraphRemover {
                 }
 
                 String substring = runText.substring(0, fromIndex) + runText.substring(toIndex);
+                if(StringUtils.isEmpty(substring)) {
+                    System.out.println(run.getPictureText());
+                    runsToRemove.add(i);
+                }
                 run.setText(substring, 0);
                 totalLength += runTextLength;
             }
+        }
+        removeEmptyRuns(runsToRemove, paragraph);
+    }
+    
+    private void removeEmptyRuns(List<Integer> indexes, XWPFParagraph paragraph) {
+        for(int i = indexes.size()-1; i >=0; i--) {
+            paragraph.removeRun(indexes.get(i));
         }
     }
 }
