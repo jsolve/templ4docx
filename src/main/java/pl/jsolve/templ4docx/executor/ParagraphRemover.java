@@ -64,7 +64,8 @@ public class ParagraphRemover {
 
         removeFromParagraph((XWPFParagraph)bodyElements[0], _startTagIndex, _endTagIndex);
 
-        if (numberOfParagraphs > 2) {
+        
+        if (numberOfParagraphs > 2 && !conditionFulfilled) {
 
             Integer startIndex = conditionInsert.getStartIndex();
             Integer endIndex = conditionInsert.getEndIndex();

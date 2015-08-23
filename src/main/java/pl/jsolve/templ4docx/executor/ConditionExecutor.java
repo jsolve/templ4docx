@@ -9,8 +9,10 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
 import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.sweetener.text.Strings;
+import pl.jsolve.templ4docx.condition.ConditionSplitter;
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.insert.ConditionInsert;
+import pl.jsolve.templ4docx.util.Condition;
 import pl.jsolve.templ4docx.variable.Variables;
 
 public class ConditionExecutor {
@@ -20,10 +22,14 @@ public class ConditionExecutor {
 
     private Variables variables;
     private ParagraphRemover paragraphRemover;
+    private ConditionComparator conditionComparator;
+    private ConditionSplitter conditionSplitter;
 
     public ConditionExecutor(Variables variables) {
         this.variables = variables;
         this.paragraphRemover = new ParagraphRemover();
+        this.conditionComparator = new ConditionComparator();
+        this.conditionSplitter = new ConditionSplitter();
     }
 
     public void execute(Docx docx) {
@@ -99,7 +105,7 @@ public class ConditionExecutor {
 
         List<IBodyElement> documentBodyElements = xwpfDocument.getBodyElements();
         List<IBodyElement> listOfBodyElements = Collections.newArrayList();
-        if(startIndex == endIndex) {
+        if (startIndex == endIndex) {
             listOfBodyElements.add(documentBodyElements.get(startIndex));
         } else {
             for (int i = startIndex; i < endIndex; i++) {
@@ -108,7 +114,10 @@ public class ConditionExecutor {
         }
         IBodyElement[] bodyElements = listOfBodyElements.toArray(new IBodyElement[0]);
 
-        paragraphRemover.removeConditionTagsFromParagraphs(conditionInsert, xwpfDocument, false, bodyElements);
+        Condition condition = conditionSplitter.splitCondition(conditionInsert.getCondition());
+        boolean isConditionFulfilled = conditionComparator.compare(condition, variables);
+
+        paragraphRemover.removeConditionTagsFromParagraphs(conditionInsert, xwpfDocument, isConditionFulfilled, bodyElements);
     }
 
 }

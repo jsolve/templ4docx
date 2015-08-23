@@ -12,8 +12,18 @@ import pl.jsolve.templ4docx.util.StringUtil;
 public class ConditionSplitter {
 
     public Condition splitCondition(String text) {
+
         Condition condition = new Condition();
         text = text.trim();
+
+        // preprocessing
+        if (text.startsWith("<docx:if ")) {
+            text = text.substring("<docx:if ".length());
+        }
+        
+        if (text.endsWith(">")) {
+            text = text.substring(0, text.length() - 1);
+        }
 
         // get variable
         int spaceAfterVariable = text.indexOf(' ');
