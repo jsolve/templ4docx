@@ -37,6 +37,8 @@ public class ConditionSplitterParamTest {
         return Arrays.asList(new Object[][] {
                 {"var1 eq “test”", "var1", OperationType.EQ, "test", String.class},
                 {"${firstname} eq “Lukasz”", "${firstname}", OperationType.EQ, "Lukasz", String.class},
+                {"${age} eq 5", "${age}", OperationType.EQ, 5, Integer.class},
+                {"${var1} ne 5.34", "${var1}", OperationType.NE, 5.34, Double.class},
                 {"${firstname} ne “Lukasz“", "${firstname}", OperationType.NE, "Lukasz", String.class},
                 {"${firstname} ne 'Lukasz'", "${firstname}", OperationType.NE, "Lukasz", String.class},
                 {"${firstname} ne Lukasz", "${firstname}", OperationType.NE, "Lukasz", String.class},

@@ -13,12 +13,14 @@ public class Variables {
     private Map<String, ImageVariable> imageVariables;
     private List<TableVariable> tableVariables;
     private Map<String, BulletListVariable> bulletListVariables;
+    private Map<String, ConditionVariable> conditionVariables;
 
     public Variables() {
         this.textVariables = Maps.newHashMap();
         this.imageVariables = Maps.newHashMap();
         this.tableVariables = Collections.newArrayList();
         this.bulletListVariables = Maps.newHashMap();
+        this.conditionVariables = Maps.newHashMap();
     }
 
     public TextVariable addTextVariable(TextVariable textVariable) {
@@ -39,6 +41,11 @@ public class Variables {
         return bulletListVariable;
     }
 
+    public ConditionVariable addConditionVariable(ConditionVariable conditionVariable) {
+        this.conditionVariables.put(conditionVariable.getKey(), conditionVariable);
+        return conditionVariable;
+    }
+
     public Map<String, TextVariable> getTextVariables() {
         return textVariables;
     }
@@ -53,6 +60,14 @@ public class Variables {
 
     public Map<String, BulletListVariable> getBulletListVariables() {
         return bulletListVariables;
+    }
+
+    public Map<String, ConditionVariable> getConditionVariables() {
+        return conditionVariables;
+    }
+
+    public ConditionVariable getCondition(String key) {
+        return conditionVariables.get(key);
     }
 
     public Variable getVariable(Key key) {

@@ -6,6 +6,15 @@ public class Condition {
     private OperationType operation;
     private Object value;
 
+    public Condition() {
+    }
+
+    public Condition(String variable, OperationType operation, Object value) {
+        this.variable = variable;
+        this.operation = operation;
+        this.value = value;
+    }
+
     public String getVariable() {
         return variable;
     }

@@ -35,7 +35,7 @@ public class ConditionExecutor {
                     || conditionInsert.getEndIndex() == null) {
                 break;
             }
-            removeParagraphs(xwpfDocument, conditionInsert);
+            executeCondition(xwpfDocument, conditionInsert);
         }
     }
 
@@ -93,7 +93,7 @@ public class ConditionExecutor {
         return conditionInsert;
     }
 
-    private void removeParagraphs(XWPFDocument xwpfDocument, ConditionInsert conditionInsert) {
+    private void executeCondition(XWPFDocument xwpfDocument, ConditionInsert conditionInsert) {
         Integer startIndex = conditionInsert.getStartIndex();
         Integer endIndex = conditionInsert.getEndIndex();
 

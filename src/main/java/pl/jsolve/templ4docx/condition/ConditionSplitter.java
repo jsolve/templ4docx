@@ -3,6 +3,7 @@ package pl.jsolve.templ4docx.condition;
 import pl.jsolve.templ4docx.exception.UnsupportedOperationTypeException;
 import pl.jsolve.templ4docx.util.Condition;
 import pl.jsolve.templ4docx.util.OperationType;
+import pl.jsolve.templ4docx.util.StringUtil;
 
 /**
  * Class responsible for parse condition string to Condition object
@@ -102,35 +103,19 @@ public class ConditionSplitter {
             text = text.substring(0, text.length() - 1);
         }
 
-        if (operationType == OperationType.GE || operationType == OperationType.GT || operationType == OperationType.LE
-                || operationType == OperationType.LT) {
-            if (!isNumeric(text)) {
-                throw new UnsupportedOperationTypeException(text + " is not a number");
-            }
-            if (isInteger(text)) {
-                return Integer.valueOf(text);
-            }
+        if ((operationType == OperationType.GE || operationType == OperationType.GT
+                || operationType == OperationType.LE || operationType == OperationType.LT)
+                && !StringUtil.isNumeric(text)) {
+            throw new UnsupportedOperationTypeException(text + " is not a number");
+        }
+
+        if (StringUtil.isInteger(text)) {
+            return Integer.valueOf(text);
+        } else if (StringUtil.isNumeric(text)) {
             return Double.valueOf(text);
         }
 
         return text;
     }
 
-    /**
-     * Check if string is integer
-     * @param str
-     * @return
-     */
-    private boolean isInteger(String str) {
-        return str.matches("-?\\d+?");
-    }
-
-    /**
-     * Check if variable is a number (Integer or Double)
-     * @param str
-     * @return
-     */
-    private boolean isNumeric(String str) {
-        return str.matches("-?\\d+(\\.\\d+)?");
-    }
 }
