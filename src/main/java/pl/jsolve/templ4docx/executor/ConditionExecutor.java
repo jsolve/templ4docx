@@ -3,9 +3,13 @@ package pl.jsolve.templ4docx.executor;
 import java.util.List;
 
 import org.apache.poi.xwpf.usermodel.BodyElementType;
+import org.apache.poi.xwpf.usermodel.IBody;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
 import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.sweetener.text.Strings;
@@ -34,14 +38,33 @@ public class ConditionExecutor {
 
     public void execute(Docx docx) {
         XWPFDocument xwpfDocument = docx.getXWPFDocument();
+        execute(xwpfDocument);
 
+        executeForTables(xwpfDocument.getTables());
+    }
+
+    // IBody
+    private void executeForTables(List<XWPFTable> tables) {
+        for (XWPFTable tbl : tables) {
+            for (XWPFTableRow row : tbl.getRows()) {
+                for (XWPFTableCell cell : row.getTableCells()) {
+                    if (!cell.getTables().isEmpty()) {
+                        executeForTables(cell.getTables());
+                    }
+                    execute(cell);
+                }
+            }
+        }
+    }
+
+    private void execute(IBody ibody) {
         while (true) {
-            ConditionInsert conditionInsert = findConditionInsert(xwpfDocument.getBodyElements());
+            ConditionInsert conditionInsert = findConditionInsert(ibody.getBodyElements());
             if (!conditionInsert.isFound() || conditionInsert.getStartIndex() == null
                     || conditionInsert.getEndIndex() == null) {
                 break;
             }
-            executeCondition(xwpfDocument, conditionInsert);
+            executeCondition(ibody, conditionInsert);
         }
     }
 
@@ -99,7 +122,7 @@ public class ConditionExecutor {
         return conditionInsert;
     }
 
-    private void executeCondition(XWPFDocument xwpfDocument, ConditionInsert conditionInsert) {
+    private void executeCondition(IBody xwpfDocument, ConditionInsert conditionInsert) {
         Integer startIndex = conditionInsert.getStartIndex();
         Integer endIndex = conditionInsert.getEndIndex();
 
@@ -117,7 +140,8 @@ public class ConditionExecutor {
         Condition condition = conditionSplitter.splitCondition(conditionInsert.getCondition());
         boolean isConditionFulfilled = conditionComparator.compare(condition, variables);
 
-        paragraphRemover.removeConditionTagsFromParagraphs(conditionInsert, xwpfDocument, isConditionFulfilled, bodyElements);
+        paragraphRemover.removeConditionTagsFromParagraphs(conditionInsert, xwpfDocument, isConditionFulfilled,
+                bodyElements);
     }
 
 }

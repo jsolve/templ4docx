@@ -4,30 +4,33 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.BodyElementType;
+import org.apache.poi.xwpf.usermodel.IBody;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 
 import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.sweetener.text.Strings;
 import pl.jsolve.templ4docx.insert.ConditionInsert;
+import pl.jsolve.templ4docx.util.XWPFTableCellWrapper;
 
 public class ParagraphRemover {
 
     /**
      * Remove condition tags and content between them (if condition is not satisfied)
      * @param conditionInsert
-     * @param document
+     * @param body
      * @param conditionFulfilled
      * @param bodyElements
      */
-    public void removeConditionTagsFromParagraphs(ConditionInsert conditionInsert, XWPFDocument document,
+    public void removeConditionTagsFromParagraphs(ConditionInsert conditionInsert, IBody body,
             boolean conditionFulfilled, IBodyElement... bodyElements) {
 
         int numberOfParagraphs = bodyElements.length;
         if (numberOfParagraphs == 1) {
-            removeConditionTagsFromParagraph(conditionInsert, document, conditionFulfilled, bodyElements[0]);
+            removeConditionTagsFromParagraph(conditionInsert, conditionFulfilled, bodyElements[0]);
             return;
         }
 
@@ -35,11 +38,10 @@ public class ParagraphRemover {
                 || (bodyElements[bodyElements.length - 1].getElementType() != BodyElementType.PARAGRAPH)) {
             return;
         }
-        
 
         // Remove start condition tag
         String condition = conditionInsert.getCondition();
-        String paragraphText = ((XWPFParagraph)bodyElements[0]).getText();
+        String paragraphText = ((XWPFParagraph) bodyElements[0]).getText();
 
         int startTagIndex = paragraphText.indexOf(condition);
         int endTagIndex = startTagIndex + condition.length();
@@ -47,10 +49,9 @@ public class ParagraphRemover {
         if (!conditionFulfilled) {
             endTagIndex = paragraphText.length();
         }
-        
+
         int _startTagIndex = startTagIndex;
         int _endTagIndex = endTagIndex;
-
 
         // remove end condition tag
         XWPFParagraph lastParagraph = (XWPFParagraph) bodyElements[bodyElements.length - 1];
@@ -62,15 +63,20 @@ public class ParagraphRemover {
         }
         removeFromParagraph(lastParagraph, startCloseTagIndex, endCloseTagIndex);
 
-        removeFromParagraph((XWPFParagraph)bodyElements[0], _startTagIndex, _endTagIndex);
+        removeFromParagraph((XWPFParagraph) bodyElements[0], _startTagIndex, _endTagIndex);
 
-        
         if (numberOfParagraphs > 2 && !conditionFulfilled) {
 
             Integer startIndex = conditionInsert.getStartIndex();
             Integer endIndex = conditionInsert.getEndIndex();
             for (int i = endIndex - 1; i > startIndex; i--) { // don't remove first and last paragraph!
-                document.removeBodyElement(i);
+
+                if (body instanceof XWPFDocument) {
+                    ((XWPFDocument) body).removeBodyElement(i);
+                } else if (body instanceof XWPFTableCell) {
+                    XWPFTableCell cell = (XWPFTableCell) body;
+                    new XWPFTableCellWrapper(cell.getCTTc(), cell.getTableRow(), cell).getBodyElements().remove(i);
+                }
             }
         }
     }
@@ -82,8 +88,8 @@ public class ParagraphRemover {
      * @param conditionFulfilled
      * @param bodyElement
      */
-    private void removeConditionTagsFromParagraph(ConditionInsert conditionInsert, XWPFDocument document,
-            boolean conditionFulfilled, IBodyElement bodyElement) {
+    private void removeConditionTagsFromParagraph(ConditionInsert conditionInsert, boolean conditionFulfilled,
+            IBodyElement bodyElement) {
 
         if (bodyElement.getElementType() != BodyElementType.PARAGRAPH) {
             return;
@@ -122,8 +128,7 @@ public class ParagraphRemover {
                 }
             }
         }
-        
-        
+
         removeFromParagraph(paragraph, _startTagIndex, _endTagIndex);
     }
 
@@ -133,7 +138,7 @@ public class ParagraphRemover {
         for (int i = 0; i < paragraph.getRuns().size(); i++) {
             XWPFRun run = paragraph.getRuns().get(i);
             String runText = run.getText(0);
-            if(runText == null) {
+            if (runText == null) {
                 runText = "";
             }
             int runTextLength = runText.length();
@@ -156,7 +161,7 @@ public class ParagraphRemover {
                 }
 
                 String substring = runText.substring(0, fromIndex) + runText.substring(toIndex);
-                if(StringUtils.isEmpty(substring)) {
+                if (StringUtils.isEmpty(substring)) {
                     System.out.println(run.getPictureText());
                     runsToRemove.add(i);
                 }
@@ -166,9 +171,9 @@ public class ParagraphRemover {
         }
         removeEmptyRuns(runsToRemove, paragraph);
     }
-    
+
     private void removeEmptyRuns(List<Integer> indexes, XWPFParagraph paragraph) {
-        for(int i = indexes.size()-1; i >=0; i--) {
+        for (int i = indexes.size() - 1; i >= 0; i--) {
             paragraph.removeRun(indexes.get(i));
         }
     }

@@ -9,7 +9,9 @@ public class Main {
     public static void main(String[] args) {
         Docx docx = new Docx("E:\\tmp\\template.docx");
         Variables var = new Variables();
-        var.addConditionVariable(new ConditionVariable("age", 1));
+        var.addConditionVariable(new ConditionVariable("age", 15));
+        var.addConditionVariable(new ConditionVariable("name", "Łukasz"));
+        
         var.addConditionVariable(new ConditionVariable("var", "cos"));
         
         docx.fillTemplate(var);
