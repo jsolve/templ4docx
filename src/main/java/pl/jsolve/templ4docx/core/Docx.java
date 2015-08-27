@@ -1,9 +1,6 @@
 package pl.jsolve.templ4docx.core;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.List;
 
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -49,6 +46,15 @@ public class Docx implements Serializable {
 
     public Docx(XWPFDocument docx) {
         this.docx = docx;
+        this.documentCleaner = new DocumentCleaner();
+    }
+
+    public Docx(InputStream is) {
+        try {
+            docx = new XWPFDocument(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.documentCleaner = new DocumentCleaner();
     }
 
