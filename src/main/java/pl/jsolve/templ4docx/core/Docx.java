@@ -47,6 +47,11 @@ public class Docx implements Serializable {
         this.documentCleaner = new DocumentCleaner();
     }
 
+    public Docx(XWPFDocument docx) {
+        this.docx = docx;
+        this.documentCleaner = new DocumentCleaner();
+    }
+
     /**
      * Open .docx template file and create new object of XWPFDocument class
      */
