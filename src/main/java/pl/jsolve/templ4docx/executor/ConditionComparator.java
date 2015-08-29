@@ -1,5 +1,6 @@
 package pl.jsolve.templ4docx.executor;
 
+import pl.jsolve.sweetener.core.Reflections;
 import pl.jsolve.templ4docx.util.Condition;
 import pl.jsolve.templ4docx.variable.ConditionVariable;
 import pl.jsolve.templ4docx.variable.Variables;
@@ -46,8 +47,38 @@ public class ConditionComparator {
     }
 
     private ConditionVariable getVariable(Condition condition, Variables variables) {
-        ConditionVariable foundCondition = variables.getCondition(condition.getVariable());
-        return foundCondition;
+        try {
+            ConditionVariable foundCondition = variables.getCondition(condition.getVariable());
+
+            if (foundCondition != null) {
+                return foundCondition;
+            }
+
+            String variable = condition.getVariable();
+            if (variable.contains(".")) {
+                String[] splitValues = variable.split("\\.");
+                String concatenatedValue = "";
+                for (String splitValue : splitValues) {
+                    concatenatedValue += splitValue;
+                    foundCondition = variables.getCondition(concatenatedValue);
+
+                    if (foundCondition != null) {
+                        Object foundObject = foundCondition.getValue();
+                        String key = variable.substring(concatenatedValue.length());
+                        if (key.startsWith(".")) {
+                            key = key.substring(1);
+                        }
+                        Object fieldValue = Reflections.getFieldValue(foundObject, key);
+                        return new ConditionVariable(variable, fieldValue);
+                    }
+
+                    concatenatedValue += ".";
+                }
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+        return null;
     }
 
     private int compare(Object fistParam, Object secondParam) {
