@@ -44,9 +44,9 @@ public class TableJunit {
             languagesColumnVariables.add(new BulletListVariable("${languages}", languages));
 
             contentColumnVariables.add(new TextVariable("${content}",student.getContent()));
-            aColumnVariables.add(new TextVariable("${a}","a"+student.getAge()));
-            bColumnVariables.add(new TextVariable("${b}","b"+student.getAge()));
-            cColumnVariables.add(new TextVariable("${c}","c"+student.getAge()));
+            aColumnVariables.add(new TextVariable("${a}",student.getA()));
+            bColumnVariables.add(new TextVariable("${b}",student.getB()));
+            cColumnVariables.add(new TextVariable("${c}",student.getC()));
         }
 
         tableVariable.addVariable(nameColumnVariables);

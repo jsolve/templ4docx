@@ -61,4 +61,16 @@ public class Student {
     public void setContent(String content) {
         this.content = content;
     }
+
+    public String getA() {
+        return a;
+    }
+
+    public String getB() {
+        return b;
+    }
+
+    public String getC() {
+        return c;
+    }
 }
