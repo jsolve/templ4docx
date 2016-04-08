@@ -10,12 +10,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRow;
 
 import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
-import pl.jsolve.templ4docx.insert.BulletListInsert;
-import pl.jsolve.templ4docx.insert.ImageInsert;
-import pl.jsolve.templ4docx.insert.Insert;
-import pl.jsolve.templ4docx.insert.TableCellInsert;
-import pl.jsolve.templ4docx.insert.TableRowInsert;
-import pl.jsolve.templ4docx.insert.TextInsert;
+import pl.jsolve.templ4docx.insert.*;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.variable.TableVariable;
 import pl.jsolve.templ4docx.variable.Variable;
@@ -36,34 +31,39 @@ public class TableInsertStrategy implements InsertStrategy {
 
     @Override
     public void insert(Insert insert, Variable variable) {
-        if (!(insert instanceof TableRowInsert)) {
+        if (!(insert instanceof TableInsert)) {
             return;
         }
         if (!(variable instanceof TableVariable)) {
             return;
         }
 
-        TableRowInsert tableRowInsert = (TableRowInsert) insert;
+        TableInsert tableInsert = (TableInsert) insert;
         TableVariable tableVariable = (TableVariable) variable;
 
         int numberOfRows = tableVariable.getNumberOfRows();
 
-        XWPFTable table = tableRowInsert.getRow().getTable();
-        int templateRowPosition = findRowPosition(table.getRows(), tableRowInsert.getRow());
-        List<TableCellInsert> templateCellInserts = tableRowInsert.getCellInserts();
-        for (int i = numberOfRows-1; i >= 0 ; i--) {
-            XWPFTableRow clonedRow = cloneRow(tableRowInsert.getRow());
-            for (TableCellInsert cellInsert : templateCellInserts) {
+        XWPFTable table = tableInsert.getTable();
 
-                Insert clonedCellInsert = cloneCellToCopiedRow(tableRowInsert.getRow(), clonedRow, cellInsert);
-                Variable subVariable = tableVariable.getVariable(clonedCellInsert.getKey(), i);
-                if (subVariable != null) {
-                    insertStrategyChooser.replace(clonedCellInsert, subVariable);
+        for (int i = 0; i <numberOfRows ; i++) {
+
+            for (TableRowInsert tableRowInsert : tableInsert.getRowInserts()){
+                List<TableCellInsert> templateCellInserts = tableRowInsert.getCellInserts();
+                XWPFTableRow clonedRow = cloneRow(tableRowInsert.getRow());
+                for (TableCellInsert cellInsert : templateCellInserts) {
+
+                    Insert clonedCellInsert = cloneCellToCopiedRow(tableRowInsert.getRow(), clonedRow, cellInsert);
+                    Variable subVariable = tableVariable.getVariable(clonedCellInsert.getKey(), i);
+                    if (subVariable != null) {
+                        insertStrategyChooser.replace(clonedCellInsert, subVariable);
+                    }
                 }
+                table.addRow(clonedRow);
+                tableRowCleaner.add(tableRowInsert.getRow());
             }
-            table.addRow(clonedRow, templateRowPosition + 1);
+
         }
-        tableRowCleaner.add(tableRowInsert.getRow());
+
     }
 
     private XWPFTableRow cloneRow(XWPFTableRow templateRow) {

@@ -1,29 +1,19 @@
 package pl.jsolve.templ4docx.extractor;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-
+import org.apache.poi.xwpf.usermodel.*;
 import pl.jsolve.sweetener.collection.Collections;
-import pl.jsolve.sweetener.collection.Maps;
 import pl.jsolve.templ4docx.cleaner.ParagraphCleaner;
 import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
-import pl.jsolve.templ4docx.insert.BulletListInsert;
-import pl.jsolve.templ4docx.insert.ImageInsert;
-import pl.jsolve.templ4docx.insert.Insert;
-import pl.jsolve.templ4docx.insert.TableCellInsert;
-import pl.jsolve.templ4docx.insert.TableRowInsert;
-import pl.jsolve.templ4docx.insert.TextInsert;
+import pl.jsolve.templ4docx.insert.*;
 import pl.jsolve.templ4docx.strategy.InsertStrategyChooser;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.variable.Variables;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class responsible for preparing list of inserts. For each variable found in template file there is creating
@@ -130,7 +120,7 @@ public class VariableFinder {
      * @param variables
      */
     private void mergeTableInserts(List<Insert> inserts, Variables variables) {
-        Map<XWPFTableRow, TableRowInsert> rowInserts = Maps.newHashMap();
+        Map<XWPFTableRow, TableRowInsert> rowInserts = new LinkedHashMap<XWPFTableRow, TableRowInsert>();
         List<Insert> insertsToRemove = Collections.newArrayList();
         for (Insert insert : inserts) {
             if (insert instanceof TableCellInsert) {
@@ -157,7 +147,27 @@ public class VariableFinder {
             inserts.remove(insert);
         }
         // and add list of row inserts
-        inserts.addAll(rowInserts.values());
+        inserts.addAll(mergeTable(rowInserts.values()));
+    }
+
+
+    private Collection<TableInsert> mergeTable(Collection<TableRowInsert> rowInserts){
+        Map<XWPFTable, TableInsert> tableInserts = new LinkedHashMap<XWPFTable, TableInsert>();
+        for (TableRowInsert rowInsert : rowInserts){
+            XWPFTable table = rowInsert.getRow().getTable();
+
+            if (tableInserts.containsKey(table)) {
+                TableInsert tableInsert = tableInserts.get(table);
+                tableInsert.add(rowInsert);
+            } else {
+                // otherwise, create new table insert
+                TableInsert tableInsert = new TableInsert();
+                tableInsert.add(rowInsert);
+                tableInserts.put(table, tableInsert);
+            }
+
+        }
+        return tableInserts.values();
     }
 
     /**
