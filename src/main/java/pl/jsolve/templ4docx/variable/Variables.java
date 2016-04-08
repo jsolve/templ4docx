@@ -62,10 +62,12 @@ public class Variables {
         case IMAGE:
             return imageVariables.get(key.getKey());
         case TABLE:
-            for (Key subkey : key.getSubKeys()) {
-                for (TableVariable tableVariable : tableVariables) {
-                    if (tableVariable.containsKey(subkey.getKey())) {
-                        return tableVariable;
+            for (Key rowKey : key.getSubKeys()) {
+                for (Key subkey : rowKey.getSubKeys()) {
+                    for (TableVariable tableVariable : tableVariables) {
+                        if (tableVariable.containsKey(subkey.getKey())) {
+                            return tableVariable;
+                        }
                     }
                 }
             }
