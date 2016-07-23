@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+archivesBaseName = 'templ4docx'
+version = System.getenv("BUILD_NUMBER") ?: "3.0.0-Beta"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'pl.jsolve:sweetener:+'
+    compile 'org.apache.poi:poi:+'
+    compile 'org.apache.poi:poi-ooxml:+'
+    compile 'org.apache.commons:commons-lang3:+'
+
+    testCompile 'org.easytesting:fest-assert:+'
+    testCompile 'junit:junit:+'
+}
+
+task copyToLibs(type: Copy) {
+    into "$buildDir/libs"
+    from configurations.compile, configurations.testCompile
+}

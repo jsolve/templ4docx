@@ -1,10 +1,15 @@
 package pl.jsolve.templ4docx.variable;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 
 public class ImageVariable implements Variable {
 
     private String key;
+    private InputStream imageStream;
     private String imagePath;
     private File imageFile;
     private int width;
@@ -12,32 +17,34 @@ public class ImageVariable implements Variable {
     private ImageType imageType;
 
     public ImageVariable(String key, String imagePath, int width, int height) {
-        this.key = key;
-        this.imagePath = imagePath;
-        this.width = width;
-        this.height = height;
-        this.imageType = ImageType.findImageTypeForPath(imagePath);
+    	this(key, new File(imagePath), ImageType.findImageTypeForPath(imagePath), width, height);
     }
 
     public ImageVariable(String key, File imageFile, int width, int height) {
-        this.key = key;
-        this.imageFile = imageFile;
-        this.width = width;
-        this.height = height;
-        this.imageType = ImageType.findImageTypeForPath(imagePath);
+    	this(key, imageFile, ImageType.findImageTypeForPath(imageFile.getAbsolutePath()), width, height);
     }
 
     public ImageVariable(String key, String imagePath, ImageType imageType, int width, int height) {
-        this.key = key;
-        this.imagePath = imagePath;
-        this.width = width;
-        this.height = height;
-        this.imageType = imageType;
+    	this(key, new File(imagePath), imageType, width, height);
     }
 
     public ImageVariable(String key, File imageFile, ImageType imageType, int width, int height) {
+    	try {
+            this.key = key;
+            this.imageFile = imageFile;
+            this.imagePath = imageFile.getAbsolutePath();
+            this.imageStream = new ByteArrayInputStream(Files.readAllBytes(imageFile.toPath()));
+            this.width = width;
+            this.height = height;
+            this.imageType = imageType;
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    	}
+    }
+
+    public ImageVariable(String key, InputStream imageStream, ImageType imageType, int width, int height) {
         this.key = key;
-        this.imageFile = imageFile;
+        this.imageStream = imageStream;
         this.width = width;
         this.height = height;
         this.imageType = imageType;
@@ -53,6 +60,10 @@ public class ImageVariable implements Variable {
 
     public File getImageFile() {
         return imageFile;
+    }
+
+    public InputStream getImageStream() {
+    	return imageStream;
     }
 
     public int getWidth() {
