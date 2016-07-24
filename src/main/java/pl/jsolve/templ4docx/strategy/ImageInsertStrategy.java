@@ -1,6 +1,5 @@
 package pl.jsolve.templ4docx.strategy;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -39,9 +38,10 @@ public class ImageInsertStrategy implements InsertStrategy {
 
     private void insertPicture(XWPFRun r, ImageVariable imageVariable) {
         try {
-            r.addPicture(new FileInputStream(imageVariable.getImagePath()),
+            r.addPicture(imageVariable.getImageStream(),
                     imageVariable.getImageType().getImageType(), imageVariable.getKey(),
                     Units.toEMU(imageVariable.getWidth()), Units.toEMU(imageVariable.getHeight()));
+            imageVariable.getImageStream().reset();
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
