@@ -30,9 +30,9 @@ public class DocumentCleaner {
 
     /**
      * Main method for cleaning XWPFRun in whole document. This method moves split variable to one XWPFRun
-     * @param docx
-     * @param variables
-     * @param variablePattern
+     * @param docx Docx
+     * @param variables variables
+     * @param variablePattern variablePattern
      */
     public void clean(Docx docx, Variables variables, VariablePattern variablePattern) {
         List<Key> keys = keyExtractor.extractKeys(variables);

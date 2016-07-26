@@ -19,7 +19,7 @@ public class ParagraphCleaner {
 
     /**
      * Add new paragraph which should be removed from document
-     * @param paragraph
+     * @param paragraph ParagraphInsert
      */
     public void add(ParagraphInsert paragraph) {
         this.paragraphs.add(paragraph);

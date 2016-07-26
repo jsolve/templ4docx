@@ -87,7 +87,7 @@ public class Docx implements Serializable {
 
     /**
      * Method replaces found variable to value provided by user
-     * @param variables
+     * @param variables Variables
      */
     public void fillTemplate(Variables variables) {
         documentCleaner.clean(this, variables, variablePattern);
@@ -97,7 +97,7 @@ public class Docx implements Serializable {
 
     /**
      * Save filled template as new .docx file
-     * @param outputPath
+     * @param outputPath String
      */
     public void save(String outputPath) {
         try {
@@ -109,7 +109,7 @@ public class Docx implements Serializable {
 
     /**
      * Save filled template as new .docx file
-     * @param outputStream
+     * @param outputStream OutputStream
      */
     public void save(OutputStream outputStream) {
         try {
@@ -121,7 +121,7 @@ public class Docx implements Serializable {
 
     /**
      * Set variable pattern which indicates how the variable looks like
-     * @param variablePattern
+     * @param variablePattern VariablePattern
      */
     public void setVariablePattern(VariablePattern variablePattern) {
         this.variablePattern = variablePattern;

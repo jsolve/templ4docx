@@ -65,9 +65,9 @@ public class VariableFinder {
 
     /**
      * Finds variables recursively for each table in the template file
-     * @param inserts
-     * @param tables
-     * @param keys
+     * @param inserts List<Insert> inserts
+     * @param tables List<XWPFTable> tables
+     * @param keys List<Key> keys
      */
     private void findInTables(List<Insert> inserts, List<XWPFTable> tables, List<Key> keys) {
         for (XWPFTable tbl : tables) {
@@ -86,10 +86,10 @@ public class VariableFinder {
 
     /**
      * Finds variables in given paragraph
-     * @param paragraph
-     * @param document
-     * @param cell
-     * @param keys
+     * @param paragraph XWPFParagraph paragraph
+     * @param document  XWPFDocument document
+     * @param cell XWPFTableCell cell
+     * @param keys  List<Key> keys
      * @return
      */
     private List<Insert> find(XWPFParagraph paragraph, XWPFDocument document, XWPFTableCell cell, List<Key> keys) {
@@ -126,8 +126,8 @@ public class VariableFinder {
     /**
      * This method checks whether many Table Inserts belong to the same row. If so, cell inserts which belong to the
      * same row are transform to one TableRowInsert.
-     * @param inserts
-     * @param variables
+     * @param inserts List<Insert> inserts
+     * @param variables Variables variables
      */
     private void mergeTableInserts(List<Insert> inserts, Variables variables) {
         Map<XWPFTableRow, TableRowInsert> rowInserts = Maps.newHashMap();
@@ -163,7 +163,7 @@ public class VariableFinder {
     /**
      * Execute appropriate strategy for each insert. This method replace found variable (Insert) to appropriate strategy
      * (replacing text, insert image, insert new row, insert bullet list)
-     * @param inserts
+     * @param inserts Insert inserts
      */
     public void replace(List<Insert> inserts) {
         for (Insert insert : inserts) {

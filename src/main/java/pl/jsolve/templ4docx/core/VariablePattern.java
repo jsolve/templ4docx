@@ -5,8 +5,6 @@ import pl.jsolve.sweetener.text.Escapes;
 /**
  * Class represents pattern of variable in .docx document. Default variable pattern is: prefix = '${' and suffix = '}'
  * which is equivalent to ${variableName}
- * @param String prefix - default value is '${'
- * @param String suffix - default value is '}'
  * @author Łukasz Stypka
  */
 public class VariablePattern {

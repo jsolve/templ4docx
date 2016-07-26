@@ -20,7 +20,7 @@ public class TableRowCleaner {
 
     /**
      * Add table row which should be removed from the table
-     * @param row
+     * @param row XWPFTableRow
      */
     public void add(XWPFTableRow row) {
         this.rows.add(row);
