@@ -2,6 +2,8 @@ package pl.jsolve.templ4docx.core;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
@@ -47,13 +49,28 @@ public class Docx implements Serializable {
         this.documentCleaner = new DocumentCleaner();
     }
 
+    public Docx(InputStream docxInputStream) {
+        open(docxInputStream);
+        this.documentCleaner = new DocumentCleaner();
+    }
+
     /**
      * Open .docx template file and create new object of XWPFDocument class
      */
     private void open() {
         try {
-            FileInputStream fis = new FileInputStream(docxPath);
-            docx = new XWPFDocument(fis);
+            open(new FileInputStream(docxPath));
+        } catch (FileNotFoundException ex) {
+            throw new OpenDocxException(ex.getMessage(), ex.getCause());
+        }
+    }
+
+    /**
+     * Read .docx template file from an input stream and create an instance of XWPFDocument class
+     */
+    private void open(InputStream inputStream) {
+        try {
+            docx = new XWPFDocument(inputStream);
         } catch (Exception ex) {
             throw new OpenDocxException(ex.getMessage(), ex.getCause());
         }
