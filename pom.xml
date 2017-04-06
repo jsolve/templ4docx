@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.jsolve</groupId>
 	<artifactId>templ4docx</artifactId>
-	<version>2.0.1</version>
+	<version>2.0.3-SNAPSHOT</version>
 	<name>templ4docx</name>
 	<description>TEMPL4DOCX - Utility library for filling templates in docx files</description>
 	<url>https://github.com/jsolve/templ4docx</url>
