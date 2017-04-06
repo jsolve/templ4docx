@@ -4,7 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+
+import org.apache.commons.io.FileUtils;
 
 public class ImageVariable implements Variable {
 
@@ -33,7 +34,7 @@ public class ImageVariable implements Variable {
             this.key = key;
             this.imageFile = imageFile;
             this.imagePath = imageFile.getAbsolutePath();
-            this.imageStream = new ByteArrayInputStream(Files.readAllBytes(imageFile.toPath()));
+            this.imageStream = new ByteArrayInputStream(FileUtils.readFileToByteArray(imageFile));
             this.width = width;
             this.height = height;
             this.imageType = imageType;
