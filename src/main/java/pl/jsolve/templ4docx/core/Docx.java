@@ -1,9 +1,9 @@
 package pl.jsolve.templ4docx.core;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
@@ -16,6 +16,7 @@ import pl.jsolve.templ4docx.cleaner.DocumentCleaner;
 import pl.jsolve.templ4docx.exception.OpenDocxException;
 import pl.jsolve.templ4docx.executor.DocumentExecutor;
 import pl.jsolve.templ4docx.extractor.VariablesExtractor;
+import pl.jsolve.templ4docx.meta.DocumentMetaProcessor;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
@@ -43,15 +44,29 @@ public class Docx implements Serializable {
      */
     private DocumentCleaner documentCleaner;
 
+    /**
+     * Document meta-information processor, which is used to mark occurrences
+     * of variables for possibility of updating them at any time.
+     */
+    private DocumentMetaProcessor documentMetaProcessor;
+
+    /**
+     * If true, all variables occurrences in document will be marked for
+     * possibility of updating them at any time.
+     */
+    private boolean processMetaInformation = false;
+
     public Docx(String docxPath) {
         this.docxPath = docxPath;
         open();
         this.documentCleaner = new DocumentCleaner();
+        this.documentMetaProcessor = new DocumentMetaProcessor();
     }
 
     public Docx(InputStream docxInputStream) {
         open(docxInputStream);
         this.documentCleaner = new DocumentCleaner();
+        this.documentMetaProcessor = new DocumentMetaProcessor();
     }
 
     /**
@@ -108,6 +123,8 @@ public class Docx implements Serializable {
      */
     public void fillTemplate(Variables variables) {
         documentCleaner.clean(this, variables, variablePattern);
+        if (processMetaInformation)
+            documentMetaProcessor.processMetaInformation(this, variables, variablePattern);
         DocumentExecutor documentExecutor = new DocumentExecutor(variables);
         documentExecutor.execute(this);
     }
@@ -150,6 +167,14 @@ public class Docx implements Serializable {
      */
     public XWPFDocument getXWPFDocument() {
         return docx;
+    }
+
+    public boolean isProcessMetaInformation() {
+        return processMetaInformation;
+    }
+
+    public void setProcessMetaInformation(boolean processMetaInformation) {
+        this.processMetaInformation = processMetaInformation;
     }
 
 }
