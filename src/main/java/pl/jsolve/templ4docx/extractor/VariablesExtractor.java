@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.templ4docx.core.VariablePattern;
 
 /**
@@ -31,7 +30,7 @@ public class VariablesExtractor {
             tagValues.add(matcher.group());
         }
 
-        List<String> filteredValues = Collections.newArrayList();
+        List<String> filteredValues = new ArrayList<String>();
         for (String value : tagValues) {
             if (StringUtils.isNoneBlank(value) && StringUtils.startsWith(value, variablePattern.getOriginalPrefix())
                     && StringUtils.endsWith(value, variablePattern.getOriginalSuffix())) {

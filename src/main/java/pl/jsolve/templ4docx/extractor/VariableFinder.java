@@ -1,5 +1,7 @@
 package pl.jsolve.templ4docx.extractor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,8 +13,6 @@ import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
-import pl.jsolve.sweetener.collection.Collections;
-import pl.jsolve.sweetener.collection.Maps;
 import pl.jsolve.templ4docx.cleaner.ParagraphCleaner;
 import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
 import pl.jsolve.templ4docx.insert.BulletListInsert;
@@ -51,7 +51,7 @@ public class VariableFinder {
      * @return List of inserts
      */
     public List<Insert> find(XWPFDocument document, Variables variables) {
-        List<Insert> inserts = Collections.newArrayList();
+        List<Insert> inserts = new ArrayList<Insert>();
         List<Key> keys = keyExtractor.extractKeys(variables);
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             inserts.addAll(find(paragraph, document, null, keys));
@@ -93,7 +93,7 @@ public class VariableFinder {
      * @return
      */
     private List<Insert> find(XWPFParagraph paragraph, XWPFDocument document, XWPFTableCell cell, List<Key> keys) {
-        List<Insert> inserts = Collections.newArrayList();
+        List<Insert> inserts = new ArrayList<Insert>();
         StringBuilder sb = new StringBuilder();
         for (XWPFRun run : paragraph.getRuns()) {
             sb.append(run.getText(0));
@@ -130,8 +130,8 @@ public class VariableFinder {
      * @param variables Variables variables
      */
     private void mergeTableInserts(List<Insert> inserts, Variables variables) {
-        Map<XWPFTableRow, TableRowInsert> rowInserts = Maps.newHashMap();
-        List<Insert> insertsToRemove = Collections.newArrayList();
+        Map<XWPFTableRow, TableRowInsert> rowInserts = new HashMap<XWPFTableRow, TableRowInsert>();
+        List<Insert> insertsToRemove = new ArrayList<Insert>();
         for (Insert insert : inserts) {
             if (insert instanceof TableCellInsert) {
                 TableCellInsert cellInsert = (TableCellInsert) insert;

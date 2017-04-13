@@ -1,10 +1,10 @@
 package pl.jsolve.templ4docx.variable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import pl.jsolve.sweetener.collection.Collections;
-import pl.jsolve.sweetener.collection.Maps;
 import pl.jsolve.templ4docx.util.Key;
 
 public class Variables {
@@ -15,10 +15,10 @@ public class Variables {
     private Map<String, BulletListVariable> bulletListVariables;
 
     public Variables() {
-        this.textVariables = Maps.newHashMap();
-        this.imageVariables = Maps.newHashMap();
-        this.tableVariables = Collections.newArrayList();
-        this.bulletListVariables = Maps.newHashMap();
+        this.textVariables = new HashMap<String, TextVariable>();
+        this.imageVariables = new HashMap<String, ImageVariable>();
+        this.tableVariables = new ArrayList<TableVariable>();
+        this.bulletListVariables = new HashMap<String, BulletListVariable>();
     }
 
     public TextVariable addTextVariable(TextVariable textVariable) {

@@ -1,9 +1,9 @@
 package pl.jsolve.templ4docx.extractor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
 import pl.jsolve.templ4docx.variable.BulletListVariable;
@@ -24,7 +24,7 @@ public class KeyExtractor {
      * @return list of keys for variables added to Variable object
      */
     public List<Key> extractKeys(Variables variables) {
-        List<Key> keys = Collections.newArrayList();
+        List<Key> keys = new ArrayList<Key>();
         for (Entry<String, TextVariable> entry : variables.getTextVariables().entrySet()) {
             keys.add(new Key(entry.getKey(), VariableType.TEXT));
         }
