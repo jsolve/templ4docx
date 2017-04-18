@@ -42,7 +42,7 @@ public class TestDocumentMetaProcessor01 {
         docx.save(processedPath);
 
         String text = docx.readTextContent();
-        assertEquals("This is test simple template with three variables: ${value01}, ${value02}, ${value03}.", text);
+        assertEquals("This is test simple template with three variables: value01, value02, value03.", text.trim());
 
         is.close();
 
@@ -63,7 +63,7 @@ public class TestDocumentMetaProcessor01 {
         docx.save(processedPath2);
 
         text = docx.readTextContent();
-        assertEquals("This is test simple template with three variables: ${value011}, ${value022}, ${value033}.", text);
+        assertEquals("This is test simple template with three variables: value011, value022, value033.", text.trim());
     }
 
 }
