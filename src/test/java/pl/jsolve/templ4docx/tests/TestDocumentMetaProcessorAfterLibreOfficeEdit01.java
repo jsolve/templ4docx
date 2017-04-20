@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import pl.jsolve.templ4docx.core.Docx;
@@ -18,28 +17,27 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-@Ignore
-public class TestDocumentMetaProcessorAfterMSOfficeEdit {
+public class TestDocumentMetaProcessorAfterLibreOfficeEdit01 {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template01-processed-edited-in-ms-office";
+        String templateFileName = "template01-processed-edited-in-libre-office01";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);
 
         String text = docx.readTextContent();
         assertEquals(
-                "This is test simple edited template with three variables: value01, value02, value03. File edited in MS Office.",
+                "This is test simple edited template with three variables: value01, value02, value03. File edited in Libre Office.",
                 text.trim());
 
         docx.setProcessMetaInformation(true);
         docx.setVariablePattern(new VariablePattern("${", "}"));
 
         Variables var = new Variables();
-        var.addTextVariable(new TextVariable("${var01}", "valueAfterEditInMSOffice01"));
-        var.addTextVariable(new TextVariable("${var02}", "valueAfterEditInMSOffice02"));
-        var.addTextVariable(new TextVariable("${var03}", "valueAfterEditInMSOffice03"));
+        var.addTextVariable(new TextVariable("${var01}", "valueAfterEditInLibreOffice01"));
+        var.addTextVariable(new TextVariable("${var02}", "valueAfterEditInLibreOffice02"));
+        var.addTextVariable(new TextVariable("${var03}", "valueAfterEditInLibreOffice03"));
 
         docx.fillTemplate(var);
 
@@ -51,7 +49,7 @@ public class TestDocumentMetaProcessorAfterMSOfficeEdit {
 
         text = docx.readTextContent();
         assertEquals(
-                "This is test simple edited template with three variables: valueAfterEditInMSOffice01, valueAfterEditInMSOffice02, valueAfterEditInMSOffice03. File edited in MS Office.",
+                "This is test simple edited template with three variables: valueAfterEditInLibreOffice01, valueAfterEditInLibreOffice02, valueAfterEditInLibreOffice03. File edited in Libre Office.",
                 text.trim());
 
         is.close();

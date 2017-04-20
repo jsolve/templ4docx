@@ -16,11 +16,16 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.xmlbeans.impl.xb.xmlschema.SpaceAttribute;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBookmark;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTText;
 import org.w3c.dom.Node;
+
+import com.indvd00m.codec.ABCCodec;
 
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.core.VariablePattern;
@@ -35,10 +40,12 @@ import pl.jsolve.templ4docx.variable.Variables;
  */
 public class DocumentMetaProcessor {
 
-    public static final String VAR_BOOKMARK_PREFIX = "variable";
-    Pattern bookmarkNamePattern = Pattern.compile("\\Q" + VAR_BOOKMARK_PREFIX + "\\E_(\\d+)_(.*)");
+    public static final String VAR_BOOKMARK_PREFIX = "var";
 
-    KeyExtractor keyExtractor = new KeyExtractor();;
+    Pattern bookmarkNamePattern = Pattern.compile("\\Q" + VAR_BOOKMARK_PREFIX + "\\E(\\d+)(.*)");
+    ABCCodec abcCodec = new ABCCodec('_', "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890");
+
+    KeyExtractor keyExtractor = new KeyExtractor();
     VariablesExtractor extractor = new VariablesExtractor();
 
     public void processMetaInformation(Docx docx, Variables variables, VariablePattern variablePattern) {
@@ -218,7 +225,7 @@ public class DocumentMetaProcessor {
                 Node nextNode = node.getNextSibling();
                 CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
                 CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-                fixIdInBookmarkNameIfNeed(startBookmark);
+                fixIdInBookmarkNameIfNeed(startBookmark, variablePattern);
                 if (!isVarInRunMarkedByBookmark(run, startBookmark, endBookmark, variablePattern)) {
                     markVarInRunByBookmark(paragraph, run, variablePattern);
                 }
@@ -237,20 +244,20 @@ public class DocumentMetaProcessor {
      *
      * @param bookmark
      */
-    void fixIdInBookmarkNameIfNeed(CTBookmark bookmark) {
+    void fixIdInBookmarkNameIfNeed(CTBookmark bookmark, VariablePattern variablePattern) {
         if (bookmark == null)
             return;
-        String name = bookmark.getName();
+        String name = getDecodedBookmarkName(bookmark, variablePattern);
         BigInteger id = bookmark.getId();
 
-        String varName = bookmarkNameToVarName(name);
+        String varName = bookmarkNameToVarName(name, variablePattern);
         BigInteger idInName = bookmarkNameToId(name);
         if (varName != null && idInName != null) {
             // this is bookmark for variable
             if (!idInName.equals(id)) {
                 // actual bookmark id differ from id in bookmark name
-                String fixedName = varNameToBookmarkName(varName, id);
-                bookmark.setName(fixedName);
+                String fixedName = varNameToBookmarkName(varName, id, variablePattern);
+                setEncodedBookmarkName(bookmark, fixedName, variablePattern);
             }
         }
     }
@@ -281,8 +288,8 @@ public class DocumentMetaProcessor {
         if (!bookmarkId.equals(endBookmark.getId()))
             return false;
 
-        String name = startBookmark.getName();
-        String expectedName = varNameToBookmarkName(varName, bookmarkId);
+        String name = getDecodedBookmarkName(startBookmark, variablePattern);
+        String expectedName = varNameToBookmarkName(varName, bookmarkId, variablePattern);
 
         return expectedName.equals(name);
     }
@@ -307,14 +314,10 @@ public class DocumentMetaProcessor {
         if (!bookmarkId.equals(endBookmark.getId()))
             return false;
 
-        String bookmarkName = startBookmark.getName();
+        String bookmarkName = getDecodedBookmarkName(startBookmark, variablePattern);
 
-        String varName = bookmarkNameToVarName(bookmarkName);
+        String varName = bookmarkNameToVarName(bookmarkName, variablePattern);
         if (varName == null)
-            return false;
-        if (!varName.startsWith(variablePattern.getOriginalPrefix()))
-            return false;
-        if (!varName.endsWith(variablePattern.getOriginalSuffix()))
             return false;
 
         return true;
@@ -327,8 +330,13 @@ public class DocumentMetaProcessor {
      * @param id
      * @return
      */
-    String varNameToBookmarkName(String varName, BigInteger id) {
-        return String.format("%s_%d_%s", VAR_BOOKMARK_PREFIX, id, varName);
+    String varNameToBookmarkName(String varName, BigInteger id, VariablePattern variablePattern) {
+        String prefix = variablePattern.getOriginalPrefix();
+        String suffix = variablePattern.getOriginalSuffix();
+        if (varName.startsWith(prefix) && varName.endsWith(suffix)) {
+            varName = varName.substring(prefix.length(), varName.length() - suffix.length());
+        }
+        return String.format("%s%d%s", VAR_BOOKMARK_PREFIX, id, varName);
     }
 
     /**
@@ -337,11 +345,12 @@ public class DocumentMetaProcessor {
      * @param bookmarkName
      * @return
      */
-    String bookmarkNameToVarName(String bookmarkName) {
+    String bookmarkNameToVarName(String bookmarkName, VariablePattern variablePattern) {
         Matcher matcher = bookmarkNamePattern.matcher(bookmarkName);
         if (!matcher.matches())
             return null;
         String varName = matcher.group(2);
+        varName = variablePattern.getOriginalPrefix() + varName + variablePattern.getOriginalSuffix();
         return varName;
     }
 
@@ -396,13 +405,13 @@ public class DocumentMetaProcessor {
 
         // getting new id and name for bookmark
         BigInteger id = getMaxBookmarkId(paragraph.getDocument()).add(new BigInteger("1"));
-        String name = varNameToBookmarkName(varName, id);
+        String name = varNameToBookmarkName(varName, id, variablePattern);
 
         // add bookmark to end of paragraph
         CTP ctp = paragraph.getCTP();
         CTBookmark startBookmark = ctp.addNewBookmarkStart();
         startBookmark.setId(id);
-        startBookmark.setName(name);
+        setEncodedBookmarkName(startBookmark, name, variablePattern);
 
         CTMarkupRange endBookmark = ctp.addNewBookmarkEnd();
         endBookmark.setId(id);
@@ -450,13 +459,50 @@ public class DocumentMetaProcessor {
             Node nextNode = node.getNextSibling();
             CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
             CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-            fixIdInBookmarkNameIfNeed(startBookmark);
+            fixIdInBookmarkNameIfNeed(startBookmark, variablePattern);
             if (isRunMarkedAsVariableByBookmark(run, startBookmark, endBookmark, variablePattern)) {
-                String varName = bookmarkNameToVarName(startBookmark.getName());
+                String varName = bookmarkNameToVarName(getDecodedBookmarkName(startBookmark, variablePattern),
+                        variablePattern);
                 if (keyNames.contains(varName)) {
                     run.setText(varName, 0);
                 }
             }
+        }
+    }
+
+    void setTextWithPreserveSpace(XWPFRun run, String value) {
+        CTR ctr = run.getCTR();
+        int pos = 0;
+        CTText t = (pos < ctr.sizeOfTArray() && pos >= 0) ? ctr.getTArray(pos) : ctr.addNewT();
+        t.setStringValue(value);
+        t.setSpace(SpaceAttribute.Space.PRESERVE);
+    }
+
+    String getDecodedBookmarkName(CTBookmark bookmark, VariablePattern variablePattern) {
+        String name = bookmark.getName();
+        Matcher matcher = bookmarkNamePattern.matcher(name);
+        if (matcher.matches()) {
+            String encodedVarName = matcher.group(2);
+            if (abcCodec.isMatchesToAlphabet(encodedVarName)) {
+                String decodedVarName = abcCodec.decode(encodedVarName);
+                return varNameToBookmarkName(decodedVarName, bookmark.getId(), variablePattern);
+            } else {
+                return name;
+            }
+        } else {
+            return name;
+        }
+    }
+
+    void setEncodedBookmarkName(CTBookmark bookmark, String name, VariablePattern variablePattern) {
+        Matcher matcher = bookmarkNamePattern.matcher(name);
+        if (matcher.matches()) {
+            String varName = matcher.group(2);
+            String encodedVarName = abcCodec.encode(varName);
+            String encodedBookmarkName = varNameToBookmarkName(encodedVarName, bookmark.getId(), variablePattern);
+            bookmark.setName(encodedBookmarkName);
+        } else {
+            bookmark.setName(name);
         }
     }
 
