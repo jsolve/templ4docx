@@ -1,4 +1,4 @@
-package pl.jsolve.templ4docx.tests;
+package pl.jsolve.templ4docx.tests.meta;
 
 import static org.junit.Assert.*;
 
@@ -17,27 +17,27 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestDocumentMetaProcessorAfterMSOfficeEdit02 {
+public class TestTemplateAfterLibreOfficeEdit02 {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template02-processed-edited-in-ms-office01";
+        String templateFileName = "template02-processed-edited-in-libre-office01";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);
 
         String text = docx.readTextContent();
         assertEquals(
-                "This is test simple edited template with three variables with «non-words» symbols in name: value01, value02, value03. File edited in MS Office.",
+                "This is test simple edited template with three variables with «non-words» symbols in name: value01, value02, value03. File edited in Libre Office.",
                 text.trim());
 
         docx.setProcessMetaInformation(true);
         docx.setVariablePattern(new VariablePattern("P{", "}"));
 
         Variables var = new Variables();
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT01}", "valueAfterEditInMSOffice01"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT02}", "valueAfterEditInMSOffice02"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT03}", "valueAfterEditInMSOffice03"));
+        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT01}", "valueAfterEditInLibreOffice01"));
+        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT02}", "valueAfterEditInLibreOffice02"));
+        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT03}", "valueAfterEditInLibreOffice03"));
 
         docx.fillTemplate(var);
 
@@ -49,7 +49,7 @@ public class TestDocumentMetaProcessorAfterMSOfficeEdit02 {
 
         text = docx.readTextContent();
         assertEquals(
-                "This is test simple edited template with three variables with «non-words» symbols in name: valueAfterEditInMSOffice01, valueAfterEditInMSOffice02, valueAfterEditInMSOffice03. File edited in MS Office.",
+                "This is test simple edited template with three variables with «non-words» symbols in name: valueAfterEditInLibreOffice01, valueAfterEditInLibreOffice02, valueAfterEditInLibreOffice03. File edited in Libre Office.",
                 text.trim());
 
         is.close();

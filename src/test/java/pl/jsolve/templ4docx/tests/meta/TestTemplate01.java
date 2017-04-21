@@ -1,4 +1,4 @@
-package pl.jsolve.templ4docx.tests;
+package pl.jsolve.templ4docx.tests.meta;
 
 import static org.junit.Assert.*;
 
@@ -17,7 +17,7 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestDocumentMetaProcessor01 {
+public class TestTemplate01 {
 
     @Test
     public void test() throws IOException {
