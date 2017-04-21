@@ -3,10 +3,8 @@ package pl.jsolve.templ4docx.meta;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,12 +48,13 @@ public class DocumentMetaProcessor {
 
     public void processMetaInformation(Docx docx, Variables variables, VariablePattern variablePattern) {
         List<Key> keys = keyExtractor.extractKeys(variables);
+        KeysHolder keysHolder = new KeysHolder(keys);
         XWPFDocument document = docx.getXWPFDocument();
         List<XWPFParagraph> paragraphs = getParagraphs(document);
         for (XWPFParagraph paragraph : paragraphs) {
-            moveVariablesToSeparateRun(paragraph, keys, variablePattern);
-            markVariablesByBookmarks(paragraph, keys, variablePattern);
-            clearVariablesInRunByBookmarks(paragraph, keys, variablePattern);
+            moveVariablesToSeparateRun(paragraph, keysHolder, variablePattern);
+            markVariablesByBookmarks(paragraph, keysHolder, variablePattern);
+            clearVariablesInRunByBookmarks(paragraph, keysHolder, variablePattern);
         }
     }
 
@@ -96,13 +95,9 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void moveVariablesToSeparateRun(XWPFParagraph paragraph, List<Key> keys, VariablePattern variablePattern) {
+    void moveVariablesToSeparateRun(XWPFParagraph paragraph, KeysHolder keysHolder, VariablePattern variablePattern) {
         String paragraphText = paragraph.getText();
 
-        Set<String> keyNames = new HashSet<String>();
-        for (Key key : keys) {
-            keyNames.add(key.getKey());
-        }
         List<XWPFRun> runs = new ArrayList<XWPFRun>(paragraph.getRuns());
         int lastProcessedRunIndex = -1;
         for (XWPFRun run : runs) {
@@ -113,7 +108,7 @@ public class DocumentMetaProcessor {
             XWPFRun lastProcessedRun = run;
             List<String> varNames = extractor.extract(text, variablePattern);
             for (String varName : varNames) {
-                if (keyNames.contains(varName)) {
+                if (keysHolder.containsKeyByName(varName)) {
                     lastProcessedRunIndex = splitRunByVariable(paragraph, lastProcessedRun, lastProcessedRunIndex,
                             varName);
                     lastProcessedRun = paragraph.getRuns().get(lastProcessedRunIndex);
@@ -195,13 +190,8 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void markVariablesByBookmarks(XWPFParagraph paragraph, List<Key> keys, VariablePattern variablePattern) {
+    void markVariablesByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder, VariablePattern variablePattern) {
         String paragraphText = paragraph.getText();
-
-        Set<String> keyNames = new HashSet<String>();
-        for (Key key : keys) {
-            keyNames.add(key.getKey());
-        }
 
         List<CTBookmark> bookmarkStartList = paragraph.getCTP().getBookmarkStartList();
         Map<Node, CTBookmark> bookmarkStartByNode = new HashMap<Node, CTBookmark>();
@@ -219,7 +209,7 @@ public class DocumentMetaProcessor {
 
         for (XWPFRun run : paragraph.getRuns()) {
             String text = run.getText(0);
-            if (keyNames.contains(text)) {
+            if (keysHolder.containsKeyByName(text)) {
                 Node node = run.getCTR().getDomNode();
                 Node prevNode = node.getPreviousSibling();
                 Node nextNode = node.getNextSibling();
@@ -433,12 +423,8 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, List<Key> keys, VariablePattern variablePattern) {
-        Set<String> keyNames = new HashSet<String>();
-        for (Key key : keys) {
-            keyNames.add(key.getKey());
-        }
-
+    void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder,
+            VariablePattern variablePattern) {
         List<CTBookmark> bookmarkStartList = paragraph.getCTP().getBookmarkStartList();
         Map<Node, CTBookmark> bookmarkStartByNode = new HashMap<Node, CTBookmark>();
         for (CTBookmark bookmark : bookmarkStartList) {
@@ -463,7 +449,7 @@ public class DocumentMetaProcessor {
             if (isRunMarkedAsVariableByBookmark(run, startBookmark, endBookmark, variablePattern)) {
                 String varName = bookmarkNameToVarName(getDecodedBookmarkName(startBookmark, variablePattern),
                         variablePattern);
-                if (keyNames.contains(varName)) {
+                if (keysHolder.containsKeyByName(varName)) {
                     run.setText(varName, 0);
                 }
             }
