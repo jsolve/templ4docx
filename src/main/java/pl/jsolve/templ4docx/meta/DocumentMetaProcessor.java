@@ -8,22 +8,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.apache.xmlbeans.impl.xb.xmlschema.SpaceAttribute;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBookmark;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTText;
 import org.w3c.dom.Node;
-
-import com.indvd00m.codec.ABCCodec;
 
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.core.VariablePattern;
@@ -40,8 +36,7 @@ public class DocumentMetaProcessor {
 
     public static final String VAR_BOOKMARK_PREFIX = "var";
 
-    Pattern bookmarkNamePattern = Pattern.compile("\\Q" + VAR_BOOKMARK_PREFIX + "\\E(\\d+)(.*)");
-    ABCCodec abcCodec = new ABCCodec('_', "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890");
+    Pattern bookmarkNamePattern = Pattern.compile("^\\Q" + VAR_BOOKMARK_PREFIX + "\\E_(\\d{1,3})_(\\w{32})$");
 
     KeyExtractor keyExtractor = new KeyExtractor();
     VariablesExtractor extractor = new VariablesExtractor();
@@ -54,7 +49,7 @@ public class DocumentMetaProcessor {
         for (XWPFParagraph paragraph : paragraphs) {
             moveVariablesToSeparateRun(paragraph, keysHolder, variablePattern);
             markVariablesByBookmarks(paragraph, keysHolder, variablePattern);
-            clearVariablesInRunByBookmarks(paragraph, keysHolder, variablePattern);
+            clearVariablesInRunByBookmarks(paragraph, keysHolder);
         }
     }
 
@@ -208,16 +203,19 @@ public class DocumentMetaProcessor {
         }
 
         for (XWPFRun run : paragraph.getRuns()) {
-            String text = run.getText(0);
-            if (keysHolder.containsKeyByName(text)) {
+            String varName = run.getText(0);
+            if (keysHolder.containsKeyByName(varName)) {
                 Node node = run.getCTR().getDomNode();
                 Node prevNode = node.getPreviousSibling();
                 Node nextNode = node.getNextSibling();
                 CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
                 CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-                fixIdInBookmarkNameIfNeed(startBookmark, variablePattern);
-                if (!isVarInRunMarkedByBookmark(run, startBookmark, endBookmark, variablePattern)) {
-                    markVarInRunByBookmark(paragraph, run, variablePattern);
+                if (!isVarInRunMarkedByBookmark(run, startBookmark, endBookmark, keysHolder, variablePattern)) {
+                    markVarInRunByBookmark(paragraph, run);
+                } else {
+                    // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
+                    // bookmark id, so bookmark name must be updated
+                    setEncodedBookmarkName(startBookmark, varName);
                 }
             }
         }
@@ -229,134 +227,38 @@ public class DocumentMetaProcessor {
     }
 
     /**
-     * After editing document in office (Libre, MS) id in bookmark name will be differ from actual bookmark id, so
-     * bookmark name must be fixed.
-     *
-     * @param bookmark
-     */
-    void fixIdInBookmarkNameIfNeed(CTBookmark bookmark, VariablePattern variablePattern) {
-        if (bookmark == null)
-            return;
-        String name = getDecodedBookmarkName(bookmark, variablePattern);
-        BigInteger id = bookmark.getId();
-
-        String varName = bookmarkNameToVarName(name, variablePattern);
-        BigInteger idInName = bookmarkNameToId(name);
-        if (varName != null && idInName != null) {
-            // this is bookmark for variable
-            if (!idInName.equals(id)) {
-                // actual bookmark id differ from id in bookmark name
-                String fixedName = varNameToBookmarkName(varName, id, variablePattern);
-                setEncodedBookmarkName(bookmark, fixedName, variablePattern);
-            }
-        }
-    }
-
-    /**
      * Return {@code true}, if run contains variable and this is run is marked by bookmark as variable.
      *
      * @param run
      * @param startBookmark
      * @param endBookmark
+     * @param keysHolder
      * @param variablePattern
      * @return
      */
     boolean isVarInRunMarkedByBookmark(XWPFRun run, CTBookmark startBookmark, CTMarkupRange endBookmark,
-            VariablePattern variablePattern) {
+            KeysHolder keysHolder, VariablePattern variablePattern) {
         if (startBookmark == null)
             return false;
         if (endBookmark == null)
             return false;
 
-        String varName = run.getText(0);
-        if (!varName.startsWith(variablePattern.getOriginalPrefix()))
-            return false;
-        if (!varName.endsWith(variablePattern.getOriginalSuffix()))
-            return false;
+        String expectedVarName = run.getText(0);
 
-        BigInteger bookmarkId = startBookmark.getId();
-        if (!bookmarkId.equals(endBookmark.getId()))
-            return false;
-
-        String name = getDecodedBookmarkName(startBookmark, variablePattern);
-        String expectedName = varNameToBookmarkName(varName, bookmarkId, variablePattern);
-
-        return expectedName.equals(name);
-    }
-
-    /**
-     * Return {@code true}, if run is marked by bookmark as variable.
-     *
-     * @param run
-     * @param startBookmark
-     * @param endBookmark
-     * @param variablePattern
-     * @return
-     */
-    boolean isRunMarkedAsVariableByBookmark(XWPFRun run, CTBookmark startBookmark, CTMarkupRange endBookmark,
-            VariablePattern variablePattern) {
-        if (startBookmark == null)
-            return false;
-        if (endBookmark == null)
-            return false;
-
-        BigInteger bookmarkId = startBookmark.getId();
-        if (!bookmarkId.equals(endBookmark.getId()))
-            return false;
-
-        String bookmarkName = getDecodedBookmarkName(startBookmark, variablePattern);
-
-        String varName = bookmarkNameToVarName(bookmarkName, variablePattern);
-        if (varName == null)
-            return false;
-
-        return true;
-    }
-
-    /**
-     * Bookmark name will be contain id. This hack will be allow use one variable more times in same document.
-     *
-     * @param varName
-     * @param id
-     * @return
-     */
-    String varNameToBookmarkName(String varName, BigInteger id, VariablePattern variablePattern) {
         String prefix = variablePattern.getOriginalPrefix();
         String suffix = variablePattern.getOriginalSuffix();
-        if (varName.startsWith(prefix) && varName.endsWith(suffix)) {
-            varName = varName.substring(prefix.length(), varName.length() - suffix.length());
-        }
-        return String.format("%s%d%s", VAR_BOOKMARK_PREFIX, id, varName);
-    }
+        if (!expectedVarName.startsWith(prefix))
+            return false;
+        if (!expectedVarName.endsWith(suffix))
+            return false;
 
-    /**
-     * Extract variable name from bookmark name.
-     *
-     * @param bookmarkName
-     * @return
-     */
-    String bookmarkNameToVarName(String bookmarkName, VariablePattern variablePattern) {
-        Matcher matcher = bookmarkNamePattern.matcher(bookmarkName);
-        if (!matcher.matches())
-            return null;
-        String varName = matcher.group(2);
-        varName = variablePattern.getOriginalPrefix() + varName + variablePattern.getOriginalSuffix();
-        return varName;
-    }
+        BigInteger bookmarkId = startBookmark.getId();
+        if (!bookmarkId.equals(endBookmark.getId()))
+            return false;
 
-    /**
-     * Extract bookmark id from bookmark name.
-     *
-     * @param bookmarkName
-     * @return
-     */
-    BigInteger bookmarkNameToId(String bookmarkName) {
-        Matcher matcher = bookmarkNamePattern.matcher(bookmarkName);
-        if (!matcher.matches())
-            return null;
-        String sId = matcher.group(1);
-        BigInteger id = new BigInteger(sId);
-        return id;
+        String actualVarName = getDecodedVarName(startBookmark, endBookmark, keysHolder);
+
+        return expectedVarName.equals(actualVarName);
     }
 
     /**
@@ -382,26 +284,19 @@ public class DocumentMetaProcessor {
      *
      * @param paragraph
      * @param run
-     * @param variablePattern
      */
-    void markVarInRunByBookmark(XWPFParagraph paragraph, XWPFRun run, VariablePattern variablePattern) {
+    void markVarInRunByBookmark(XWPFParagraph paragraph, XWPFRun run) {
 
-        // check variable name with pattern
         String varName = run.getText(0);
-        if (!varName.startsWith(variablePattern.getOriginalPrefix()))
-            return;
-        if (!varName.endsWith(variablePattern.getOriginalSuffix()))
-            return;
 
-        // getting new id and name for bookmark
+        // getting new id for bookmark
         BigInteger id = getMaxBookmarkId(paragraph.getDocument()).add(new BigInteger("1"));
-        String name = varNameToBookmarkName(varName, id, variablePattern);
 
         // add bookmark to end of paragraph
         CTP ctp = paragraph.getCTP();
         CTBookmark startBookmark = ctp.addNewBookmarkStart();
         startBookmark.setId(id);
-        setEncodedBookmarkName(startBookmark, name, variablePattern);
+        setEncodedBookmarkName(startBookmark, varName);
 
         CTMarkupRange endBookmark = ctp.addNewBookmarkEnd();
         endBookmark.setId(id);
@@ -423,8 +318,7 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder,
-            VariablePattern variablePattern) {
+    void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
         List<CTBookmark> bookmarkStartList = paragraph.getCTP().getBookmarkStartList();
         Map<Node, CTBookmark> bookmarkStartByNode = new HashMap<Node, CTBookmark>();
         for (CTBookmark bookmark : bookmarkStartList) {
@@ -445,51 +339,59 @@ public class DocumentMetaProcessor {
             Node nextNode = node.getNextSibling();
             CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
             CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-            fixIdInBookmarkNameIfNeed(startBookmark, variablePattern);
-            if (isRunMarkedAsVariableByBookmark(run, startBookmark, endBookmark, variablePattern)) {
-                String varName = bookmarkNameToVarName(getDecodedBookmarkName(startBookmark, variablePattern),
-                        variablePattern);
-                if (keysHolder.containsKeyByName(varName)) {
-                    run.setText(varName, 0);
-                }
+            String varName = getDecodedVarName(startBookmark, endBookmark, keysHolder);
+            if (varName != null) {
+                // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
+                // bookmark id, so bookmark name must be updated
+                setEncodedBookmarkName(startBookmark, varName);
+                run.setText(varName, 0);
             }
         }
     }
 
-    void setTextWithPreserveSpace(XWPFRun run, String value) {
-        CTR ctr = run.getCTR();
-        int pos = 0;
-        CTText t = (pos < ctr.sizeOfTArray() && pos >= 0) ? ctr.getTArray(pos) : ctr.addNewT();
-        t.setStringValue(value);
-        t.setSpace(SpaceAttribute.Space.PRESERVE);
-    }
+    /**
+     * Extract decoded variable name from bookmark name.
+     *
+     * @param startBookmark
+     * @param keysHolder
+     * @return
+     */
+    String getDecodedVarName(CTBookmark startBookmark, CTMarkupRange endBookmark, KeysHolder keysHolder) {
+        if (startBookmark == null)
+            return null;
+        if (endBookmark == null)
+            return null;
 
-    String getDecodedBookmarkName(CTBookmark bookmark, VariablePattern variablePattern) {
-        String name = bookmark.getName();
-        Matcher matcher = bookmarkNamePattern.matcher(name);
+        BigInteger bookmarkId = startBookmark.getId();
+        if (!bookmarkId.equals(endBookmark.getId()))
+            return null;
+
+        String bookmarkName = startBookmark.getName();
+        Matcher matcher = bookmarkNamePattern.matcher(bookmarkName);
         if (matcher.matches()) {
             String encodedVarName = matcher.group(2);
-            if (abcCodec.isMatchesToAlphabet(encodedVarName)) {
-                String decodedVarName = abcCodec.decode(encodedVarName);
-                return varNameToBookmarkName(decodedVarName, bookmark.getId(), variablePattern);
+            if (keysHolder.containsKeyByMD5Name(encodedVarName)) {
+                String decodedVarName = keysHolder.getKeyNameByMD5Name(encodedVarName);
+                return decodedVarName;
             } else {
-                return name;
+                return null;
             }
         } else {
-            return name;
+            return null;
         }
     }
 
-    void setEncodedBookmarkName(CTBookmark bookmark, String name, VariablePattern variablePattern) {
-        Matcher matcher = bookmarkNamePattern.matcher(name);
-        if (matcher.matches()) {
-            String varName = matcher.group(2);
-            String encodedVarName = abcCodec.encode(varName);
-            String encodedBookmarkName = varNameToBookmarkName(encodedVarName, bookmark.getId(), variablePattern);
-            bookmark.setName(encodedBookmarkName);
-        } else {
-            bookmark.setName(name);
-        }
+    /**
+     * Encode bookmark name. Bookmark name will be contain id. This hack will be allow use one variable more times in
+     * same document.
+     *
+     * @param bookmark
+     * @param varName
+     */
+    void setEncodedBookmarkName(CTBookmark bookmark, String varName) {
+        String encodedVarName = DigestUtils.md5Hex(varName).toUpperCase();
+        String encodedBookmarkName = String.format("%s_%d_%s", VAR_BOOKMARK_PREFIX, bookmark.getId(), encodedVarName);
+        bookmark.setName(encodedBookmarkName);
     }
 
 }

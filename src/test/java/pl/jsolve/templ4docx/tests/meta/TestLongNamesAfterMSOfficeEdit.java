@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import pl.jsolve.templ4docx.core.Docx;
@@ -18,7 +17,6 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-@Ignore
 public class TestLongNamesAfterMSOfficeEdit {
 
     @Test
