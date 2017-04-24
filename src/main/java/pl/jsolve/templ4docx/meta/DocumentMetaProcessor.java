@@ -29,6 +29,31 @@ import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
+ * <p>
+ * {@link DocumentMetaProcessor} allow reuse generated from template files for repeated usage as templates. So you can
+ * generate file from template, edit this generated file (in text processor for example) and update variables values
+ * after editing. Then edit file again and update values again, and again.
+ * </p>
+ *
+ * <p>
+ * It is possible by injecting meta information into generated docx-file. Every text occurrence of variable
+ * ({@code ${var1}} for example) will be moved to separate {@code Run} object and this {@code Run} object will be marked
+ * by bookmark ({@code w:bookmarkStart} before {@code w:r} and {@code w:bookmarkEnd} after them).
+ * </p>
+ *
+ * <p>
+ * Bookmark name looks like this: {@code var_1_0DE5D44A9BA046A9A70C921BCFBCBAB7}, where "var" is a prefix, 1 is bookmark
+ * id and "0DE5D44A9BA046A9A70C921BCFBCBAB7" is a md5 hash code of variable name ("${var1}" in this case). Bookmark name
+ * contain id, this hack will be allow use one variable more times in same document (because of bookmark name must be
+ * unique).
+ * </p>
+ *
+ * <p>
+ * Before every of fill of template by variable values {@link DocumentMetaProcessor} will search such bookmarks and
+ * replace any text of {@code Run} object in this bookmarks by variable name ("${var1}" in this case). Then
+ * {@code DocumentExecutor} will update variable values as usual.
+ * </p>
+ *
  * @author indvd00m
  *
  */
