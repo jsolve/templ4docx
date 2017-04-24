@@ -21,7 +21,7 @@ public class TestLongNames {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template03";
+        String templateFileName = "long-names";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);

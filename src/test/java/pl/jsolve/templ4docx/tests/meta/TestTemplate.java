@@ -17,21 +17,21 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestTemplate02 {
+public class TestTemplate {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template02";
+        String templateFileName = "template";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);
         docx.setProcessMetaInformation(true);
-        docx.setVariablePattern(new VariablePattern("P{", "}"));
+        docx.setVariablePattern(new VariablePattern("${", "}"));
 
         Variables var = new Variables();
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT01}", "value01"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT02}", "value02"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT03}", "value03"));
+        var.addTextVariable(new TextVariable("${var01}", "value01"));
+        var.addTextVariable(new TextVariable("${var02}", "value02"));
+        var.addTextVariable(new TextVariable("${var03}", "value03"));
 
         docx.fillTemplate(var);
 
@@ -42,20 +42,18 @@ public class TestTemplate02 {
         docx.save(processedPath);
 
         String text = docx.readTextContent();
-        assertEquals(
-                "This is test simple template with three variables with «non-words» symbols in name: value01, value02, value03.",
-                text.trim());
+        assertEquals("This is test simple template with three variables: value01, value02, value03.", text.trim());
 
         is.close();
 
         docx = new Docx(processedPath);
         docx.setProcessMetaInformation(true);
-        docx.setVariablePattern(new VariablePattern("P{", "}"));
+        docx.setVariablePattern(new VariablePattern("${", "}"));
 
         var = new Variables();
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT01}", "value011"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT02}", "value022"));
-        var.addTextVariable(new TextVariable("P{UNDESCORE_AND.DOT03}", "value033"));
+        var.addTextVariable(new TextVariable("${var01}", "value011"));
+        var.addTextVariable(new TextVariable("${var02}", "value022"));
+        var.addTextVariable(new TextVariable("${var03}", "value033"));
 
         docx.fillTemplate(var);
 
@@ -65,9 +63,7 @@ public class TestTemplate02 {
         docx.save(processedPath2);
 
         text = docx.readTextContent();
-        assertEquals(
-                "This is test simple template with three variables with «non-words» symbols in name: value011, value022, value033.",
-                text.trim());
+        assertEquals("This is test simple template with three variables: value011, value022, value033.", text.trim());
     }
 
 }

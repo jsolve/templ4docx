@@ -21,7 +21,7 @@ public class TestLongNamesAfterLibreOfficeEdit {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template03-processed-edited-in-libre-office";
+        String templateFileName = "long-names-processed-edited-in-libre-office";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);
@@ -46,7 +46,7 @@ public class TestLongNamesAfterLibreOfficeEdit {
 
         String tmpPath = System.getProperty("java.io.tmpdir");
         String processedPath = String.format("%s%s%s", tmpPath, File.separator,
-                templateFileName + "-processed2" + ".docx");
+                templateFileName + "-processed" + ".docx");
 
         docx.save(processedPath);
 
