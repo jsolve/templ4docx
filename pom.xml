@@ -83,11 +83,6 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
-		<dependency>
-			<groupId>com.indvd00m.codec</groupId>
-			<artifactId>abc-codec</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -261,12 +256,5 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-	
-	<repositories>
-		<repository>
-			<id>indvd00m-github-repo</id>
-			<url>https://github.com/indvd00m/maven-repo/raw/master/repository</url>
-		</repository>
-	</repositories>
 
 </project>
