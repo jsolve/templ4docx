@@ -65,10 +65,10 @@ public class DocumentMetaProcessor {
 
     public static final String VAR_BOOKMARK_PREFIX = "var";
 
-    Pattern bookmarkNamePattern = Pattern.compile("^\\Q" + VAR_BOOKMARK_PREFIX + "\\E_(\\d{1,3})_(\\w{32})$");
+    protected Pattern bookmarkNamePattern = Pattern.compile("^\\Q" + VAR_BOOKMARK_PREFIX + "\\E_(\\d{1,3})_(\\w{32})$");
 
-    KeyExtractor keyExtractor = new KeyExtractor();
-    VariablesExtractor extractor = new VariablesExtractor();
+    protected KeyExtractor keyExtractor = new KeyExtractor();
+    protected VariablesExtractor extractor = new VariablesExtractor();
 
     public void processMetaInformation(Docx docx, Variables variables, VariablePattern variablePattern) {
         List<Key> keys = keyExtractor.extractKeys(variables);
@@ -86,7 +86,7 @@ public class DocumentMetaProcessor {
      * @param document
      * @return All document paragraphs (including paragraphs in nested tables)
      */
-    List<XWPFParagraph> getParagraphs(XWPFDocument document) {
+    protected List<XWPFParagraph> getParagraphs(XWPFDocument document) {
         List<XWPFParagraph> paragraphs = new ArrayList<XWPFParagraph>();
         paragraphs.addAll(document.getParagraphs());
         for (XWPFTable table : document.getTables()) {
@@ -99,7 +99,7 @@ public class DocumentMetaProcessor {
      * @param table
      * @return All table paragraphs (including paragraphs in nested tables)
      */
-    List<XWPFParagraph> getParagraphs(XWPFTable table) {
+    protected List<XWPFParagraph> getParagraphs(XWPFTable table) {
         List<XWPFParagraph> paragraphs = new ArrayList<XWPFParagraph>();
         for (XWPFTableRow row : table.getRows()) {
             for (XWPFTableCell cell : row.getTableCells()) {
@@ -119,7 +119,8 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void moveVariablesToSeparateRun(XWPFParagraph paragraph, KeysHolder keysHolder, VariablePattern variablePattern) {
+    protected void moveVariablesToSeparateRun(XWPFParagraph paragraph, KeysHolder keysHolder,
+            VariablePattern variablePattern) {
         String paragraphText = paragraph.getText();
 
         List<XWPFRun> runs = new ArrayList<XWPFRun>(paragraph.getRuns());
@@ -154,7 +155,7 @@ public class DocumentMetaProcessor {
      * @param varName
      * @return index of a last new run after splitting source run and creating new runs
      */
-    int splitRunByVariable(XWPFParagraph paragraph, XWPFRun run, int runIndex, String varName) {
+    protected int splitRunByVariable(XWPFParagraph paragraph, XWPFRun run, int runIndex, String varName) {
         String text = run.getText(0);
         if (text == null)
             return runIndex;
@@ -193,16 +194,16 @@ public class DocumentMetaProcessor {
         return runIndex;
     }
 
-    void cloneRun(XWPFRun source, XWPFRun target) {
+    protected void cloneRun(XWPFRun source, XWPFRun target) {
         applyStyle(source, target);
         target.setText(source.getText(0), 0);
     }
 
-    void applyStyle(XWPFRun source, XWPFRun target) {
+    protected void applyStyle(XWPFRun source, XWPFRun target) {
         applyRPr(target, source.getCTR().getRPr());
     }
 
-    void applyRPr(XWPFRun run, CTRPr rPr) {
+    protected void applyRPr(XWPFRun run, CTRPr rPr) {
         CTRPr sourceRPr = run.getCTR().isSetRPr() ? run.getCTR().getRPr() : run.getCTR().addNewRPr();
         sourceRPr.set(rPr);
     }
@@ -214,7 +215,8 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void markVariablesByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder, VariablePattern variablePattern) {
+    protected void markVariablesByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder,
+            VariablePattern variablePattern) {
         String paragraphText = paragraph.getText();
 
         List<CTBookmark> bookmarkStartList = paragraph.getCTP().getBookmarkStartList();
@@ -261,7 +263,7 @@ public class DocumentMetaProcessor {
      * @param keysHolder
      * @return
      */
-    List<VariableBookmark> getVariableBookmarks(XWPFRun run, KeysHolder keysHolder) {
+    protected List<VariableBookmark> getVariableBookmarks(XWPFRun run, KeysHolder keysHolder) {
         List<VariableBookmark> varBookmarks = new ArrayList<VariableBookmark>();
 
         // paragraph
@@ -344,7 +346,7 @@ public class DocumentMetaProcessor {
      * @param keysHolder
      * @return
      */
-    List<VariableBookmark> getVariableBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
+    protected List<VariableBookmark> getVariableBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
         List<VariableBookmark> varBookmarks = new ArrayList<VariableBookmark>();
 
         // bookmarkStartById
@@ -390,7 +392,7 @@ public class DocumentMetaProcessor {
      * @param document
      * @return Max bookmark id in document
      */
-    BigInteger getMaxBookmarkId(XWPFDocument document) {
+    protected BigInteger getMaxBookmarkId(XWPFDocument document) {
         BigInteger maxId = new BigInteger("0");
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             CTP ctp = paragraph.getCTP();
@@ -410,7 +412,7 @@ public class DocumentMetaProcessor {
      * @param paragraph
      * @param run
      */
-    void markVarInRunByBookmark(XWPFParagraph paragraph, XWPFRun run) {
+    protected void markVarInRunByBookmark(XWPFParagraph paragraph, XWPFRun run) {
 
         String varName = run.getText(0);
 
@@ -437,7 +439,8 @@ public class DocumentMetaProcessor {
      * @param bookmarkStart
      * @param bookmarkEnd
      */
-    void alignNodes(XWPFParagraph paragraph, XWPFRun run, CTBookmark bookmarkStart, CTMarkupRange bookmarkEnd) {
+    protected void alignNodes(XWPFParagraph paragraph, XWPFRun run, CTBookmark bookmarkStart,
+            CTMarkupRange bookmarkEnd) {
         Node paragraphNode = paragraph.getCTP().getDomNode();
         Node runNode = run.getCTR().getDomNode();
         Node bookmarkStartNode = bookmarkStart.getDomNode();
@@ -455,7 +458,7 @@ public class DocumentMetaProcessor {
      * @param keys
      * @param variablePattern
      */
-    void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
+    protected void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
         List<VariableBookmark> varBookmarks = getVariableBookmarks(paragraph, keysHolder);
         for (VariableBookmark varBookmark : varBookmarks) {
             clearVariableBookmark(paragraph, varBookmark, keysHolder);
@@ -470,7 +473,7 @@ public class DocumentMetaProcessor {
      * @param varBookmark
      * @param keysHolder
      */
-    void clearVariableBookmark(XWPFParagraph paragraph, VariableBookmark varBookmark, KeysHolder keysHolder) {
+    protected void clearVariableBookmark(XWPFParagraph paragraph, VariableBookmark varBookmark, KeysHolder keysHolder) {
         Node paragraphNode = paragraph.getCTP().getDomNode();
         if (!containsInNode(paragraphNode, varBookmark))
             return;
@@ -533,7 +536,7 @@ public class DocumentMetaProcessor {
         }
     }
 
-    boolean containsInNode(Node node, VariableBookmark varBookmark) {
+    protected boolean containsInNode(Node node, VariableBookmark varBookmark) {
         CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
         CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
         Node bookmarkStartNode = bookmarkStart.getDomNode();
@@ -547,7 +550,7 @@ public class DocumentMetaProcessor {
         return true;
     }
 
-    boolean containsInNode(Node container, Node node) {
+    protected boolean containsInNode(Node container, Node node) {
         NodeList childNodes = container.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node child = childNodes.item(i);
@@ -559,7 +562,7 @@ public class DocumentMetaProcessor {
         return false;
     }
 
-    boolean containsInVariableBookmark(VariableBookmark varBookmark, Node node) {
+    protected boolean containsInVariableBookmark(VariableBookmark varBookmark, Node node) {
         CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
         CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
         Node bookmarkStartNode = bookmarkStart.getDomNode();
@@ -573,7 +576,7 @@ public class DocumentMetaProcessor {
         return true;
     }
 
-    boolean isBeforeNode(Node source, Node target) {
+    protected boolean isBeforeNode(Node source, Node target) {
         Node prevNode = source.getPreviousSibling();
         while (prevNode != null) {
             if (prevNode.equals(target))
@@ -583,7 +586,7 @@ public class DocumentMetaProcessor {
         return false;
     }
 
-    boolean isAfterNode(Node source, Node target) {
+    protected boolean isAfterNode(Node source, Node target) {
         Node nextNode = source.getNextSibling();
         while (nextNode != null) {
             if (nextNode.equals(target))
@@ -593,7 +596,7 @@ public class DocumentMetaProcessor {
         return false;
     }
 
-    int getVariableRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+    protected int getVariableRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
         String varName = varBookmark.getVarName();
 
         int index = -1;
@@ -617,7 +620,7 @@ public class DocumentMetaProcessor {
         return index;
     }
 
-    int getFirstRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+    protected int getFirstRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
         List<XWPFRun> runs = paragraph.getRuns();
         for (int i = 0; i < runs.size(); i++) {
             XWPFRun run = runs.get(i);
@@ -629,7 +632,7 @@ public class DocumentMetaProcessor {
         return -1;
     }
 
-    int getNextRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+    protected int getNextRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
         Map<Node, XWPFRun> runByNode = new HashMap<Node, XWPFRun>();
         Map<XWPFRun, Integer> runIndexes = new HashMap<XWPFRun, Integer>();
         List<XWPFRun> runs = paragraph.getRuns();
@@ -652,7 +655,7 @@ public class DocumentMetaProcessor {
         return runs.size();
     }
 
-    int getPrevRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+    protected int getPrevRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
         Map<Node, XWPFRun> runByNode = new HashMap<Node, XWPFRun>();
         Map<XWPFRun, Integer> runIndexes = new HashMap<XWPFRun, Integer>();
         List<XWPFRun> runs = paragraph.getRuns();
@@ -682,7 +685,7 @@ public class DocumentMetaProcessor {
      * @param keysHolder
      * @return
      */
-    String getDecodedVarName(CTBookmark bookmarkStart, CTMarkupRange bookmarkEnd, KeysHolder keysHolder) {
+    protected String getDecodedVarName(CTBookmark bookmarkStart, CTMarkupRange bookmarkEnd, KeysHolder keysHolder) {
         if (bookmarkStart == null)
             return null;
         if (bookmarkEnd == null)
@@ -714,7 +717,7 @@ public class DocumentMetaProcessor {
      * @param bookmark
      * @param varName
      */
-    void setEncodedBookmarkName(CTBookmark bookmark, String varName) {
+    protected void setEncodedBookmarkName(CTBookmark bookmark, String varName) {
         String encodedVarName = DigestUtils.md5Hex(varName).toUpperCase();
         String encodedBookmarkName = String.format("%s_%d_%s", VAR_BOOKMARK_PREFIX, bookmark.getId(), encodedVarName);
         bookmark.setName(encodedBookmarkName);
