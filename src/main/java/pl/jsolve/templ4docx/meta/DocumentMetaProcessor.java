@@ -513,6 +513,11 @@ public class DocumentMetaProcessor {
                 }
                 int nextRunIndex = getNextRunIndex(paragraph, varBookmark);
                 varRun = paragraph.insertNewRun(nextRunIndex);
+                int prevRunIndex = getPrevRunIndex(paragraph, varBookmark);
+                if (prevRunIndex != -1) {
+                    XWPFRun prevRun = paragraph.getRuns().get(prevRunIndex);
+                    applyStyle(prevRun, varRun);
+                }
                 needNodeAlign = true;
             }
         }
@@ -645,6 +650,29 @@ public class DocumentMetaProcessor {
             nextNode = nextNode.getNextSibling();
         }
         return runs.size();
+    }
+
+    int getPrevRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+        Map<Node, XWPFRun> runByNode = new HashMap<Node, XWPFRun>();
+        Map<XWPFRun, Integer> runIndexes = new HashMap<XWPFRun, Integer>();
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = 0; i < runs.size(); i++) {
+            XWPFRun run = runs.get(i);
+            Node node = run.getCTR().getDomNode();
+            runByNode.put(node, run);
+            runIndexes.put(run, i);
+        }
+        Node bookmarkStartNode = varBookmark.getBookmarkStart().getDomNode();
+        Node prevNode = bookmarkStartNode.getPreviousSibling();
+        while (prevNode != null) {
+            XWPFRun run = runByNode.get(prevNode);
+            if (run != null) {
+                int index = runIndexes.get(run).intValue();
+                return index;
+            }
+            prevNode = prevNode.getPreviousSibling();
+        }
+        return -1;
     }
 
     /**
