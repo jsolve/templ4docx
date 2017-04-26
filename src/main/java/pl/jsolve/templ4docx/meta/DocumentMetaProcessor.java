@@ -426,8 +426,19 @@ public class DocumentMetaProcessor {
         CTMarkupRange bookmarkEnd = ctp.addNewBookmarkEnd();
         bookmarkEnd.setId(id);
 
-        // move bookmark to actual run
-        Node paragraphNode = ctp.getDomNode();
+        alignNodes(paragraph, run, bookmarkStart, bookmarkEnd);
+    }
+
+    /**
+     * Move bookmark to actual run.
+     *
+     * @param paragraph
+     * @param run
+     * @param bookmarkStart
+     * @param bookmarkEnd
+     */
+    void alignNodes(XWPFParagraph paragraph, XWPFRun run, CTBookmark bookmarkStart, CTMarkupRange bookmarkEnd) {
+        Node paragraphNode = paragraph.getCTP().getDomNode();
         Node runNode = run.getCTR().getDomNode();
         Node bookmarkStartNode = bookmarkStart.getDomNode();
         Node bookmarkEndNode = bookmarkEnd.getDomNode();
@@ -467,14 +478,15 @@ public class DocumentMetaProcessor {
         CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
         CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
 
-        // find variable run
+        // find or create variable run
         XWPFRun varRun;
+        boolean needNodeAlign = false;
         {
-            List<XWPFRun> runs = paragraph.getRuns();
             int varRunIndex = getVariableRunIndex(paragraph, varBookmark);
             int firstRunIndex = getFirstRunIndex(paragraph, varBookmark);
             if (firstRunIndex != -1) {
                 // varRun must be first run inside bookmark
+                List<XWPFRun> runs = paragraph.getRuns();
                 if (varRunIndex == -1) {
                     throw new IllegalStateException("Incorrect index of variable Run");
                 }
@@ -484,6 +496,16 @@ public class DocumentMetaProcessor {
                     applyStyle(varRun, firstRun);
                 }
                 varRun = firstRun;
+
+                // remove all runs except run with variable
+                for (int i = runs.size() - 1; i >= 0; i--) {
+                    XWPFRun r = runs.get(i);
+                    if (r.equals(varRun))
+                        continue;
+                    Node n = r.getCTR().getDomNode();
+                    if (containsInVariableBookmark(varBookmark, n))
+                        paragraph.removeRun(i);
+                }
             } else {
                 // bookmark doesn't contains any run, so we must create new
                 if (varRunIndex != -1) {
@@ -491,26 +513,8 @@ public class DocumentMetaProcessor {
                 }
                 int nextRunIndex = getNextRunIndex(paragraph, varBookmark);
                 varRun = paragraph.insertNewRun(nextRunIndex);
-
-                // move bookmark to actual run
-                Node varRunNode = varRun.getCTR().getDomNode();
-                Node bookmarkStartNode = bookmarkStart.getDomNode();
-                Node bookmarkEndNode = bookmarkEnd.getDomNode();
-
-                paragraphNode.insertBefore(bookmarkStartNode, varRunNode);
-                paragraphNode.insertBefore(bookmarkEndNode, varRunNode.getNextSibling());
+                needNodeAlign = true;
             }
-        }
-
-        // remove all runs except run with variable
-        List<XWPFRun> runs = paragraph.getRuns();
-        for (int i = runs.size() - 1; i >= 0; i--) {
-            XWPFRun r = runs.get(i);
-            if (r.equals(varRun))
-                continue;
-            Node n = r.getCTR().getDomNode();
-            if (containsInVariableBookmark(varBookmark, n))
-                paragraph.removeRun(i);
         }
 
         // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
@@ -518,6 +522,10 @@ public class DocumentMetaProcessor {
         String varName = varBookmark.getVarName();
         setEncodedBookmarkName(bookmarkStart, varName);
         varRun.setText(varName, 0);
+
+        if (needNodeAlign) {
+            alignNodes(paragraph, varRun, bookmarkStart, bookmarkEnd);
+        }
     }
 
     boolean containsInNode(Node node, VariableBookmark varBookmark) {
@@ -617,26 +625,26 @@ public class DocumentMetaProcessor {
     }
 
     int getNextRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+        Map<Node, XWPFRun> runByNode = new HashMap<Node, XWPFRun>();
+        Map<XWPFRun, Integer> runIndexes = new HashMap<XWPFRun, Integer>();
         List<XWPFRun> runs = paragraph.getRuns();
-        int size = runs.size();
-        int nextIndex = size;
-        for (int i = size - 1; i >= 0; i--) {
+        for (int i = 0; i < runs.size(); i++) {
             XWPFRun run = runs.get(i);
             Node node = run.getCTR().getDomNode();
-            if (!containsInVariableBookmark(varBookmark, node)) {
-                if (nextIndex == i + 1) {
-                    nextIndex = i;
-                } else {
-                    break;
-                }
-            } else {
-                break;
+            runByNode.put(node, run);
+            runIndexes.put(run, i);
+        }
+        Node bookmarkEndNode = varBookmark.getBookmarkEnd().getDomNode();
+        Node nextNode = bookmarkEndNode.getNextSibling();
+        while (nextNode != null) {
+            XWPFRun run = runByNode.get(nextNode);
+            if (run != null) {
+                int index = runIndexes.get(run).intValue();
+                return index;
             }
+            nextNode = nextNode.getNextSibling();
         }
-        if (nextIndex == 0) {
-            nextIndex = size;
-        }
-        return nextIndex;
+        return runs.size();
     }
 
     /**
