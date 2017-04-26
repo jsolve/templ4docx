@@ -3,12 +3,15 @@ package pl.jsolve.templ4docx.meta;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.poi.xwpf.usermodel.IRunBody;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -20,6 +23,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.core.VariablePattern;
@@ -230,17 +234,16 @@ public class DocumentMetaProcessor {
         for (XWPFRun run : paragraph.getRuns()) {
             String varName = run.getText(0);
             if (keysHolder.containsKeyByName(varName)) {
-                Node node = run.getCTR().getDomNode();
-                Node prevNode = node.getPreviousSibling();
-                Node nextNode = node.getNextSibling();
-                CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
-                CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-                if (!isVarInRunMarkedByBookmark(run, startBookmark, endBookmark, keysHolder, variablePattern)) {
+                List<VariableBookmark> varBookmarks = getVariableBookmarks(run, keysHolder);
+                if (varBookmarks.isEmpty()) {
                     markVarInRunByBookmark(paragraph, run);
                 } else {
                     // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
                     // bookmark id, so bookmark name must be updated
-                    setEncodedBookmarkName(startBookmark, varName);
+                    for (VariableBookmark varBookmark : varBookmarks) {
+                        CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
+                        setEncodedBookmarkName(bookmarkStart, varBookmark.getVarName());
+                    }
                 }
             }
         }
@@ -252,38 +255,135 @@ public class DocumentMetaProcessor {
     }
 
     /**
-     * Return {@code true}, if run contains variable and this is run is marked by bookmark as variable.
+     * Find bookmarks used as meta information for variables near the {@code run}.
      *
      * @param run
-     * @param startBookmark
-     * @param endBookmark
      * @param keysHolder
-     * @param variablePattern
      * @return
      */
-    boolean isVarInRunMarkedByBookmark(XWPFRun run, CTBookmark startBookmark, CTMarkupRange endBookmark,
-            KeysHolder keysHolder, VariablePattern variablePattern) {
-        if (startBookmark == null)
-            return false;
-        if (endBookmark == null)
-            return false;
+    List<VariableBookmark> getVariableBookmarks(XWPFRun run, KeysHolder keysHolder) {
+        List<VariableBookmark> varBookmarks = new ArrayList<VariableBookmark>();
 
-        String expectedVarName = run.getText(0);
+        // paragraph
+        IRunBody parent = run.getParent();
+        if (parent instanceof XWPFParagraph == false)
+            return varBookmarks;
+        XWPFParagraph paragraph = (XWPFParagraph) parent;
 
-        String prefix = variablePattern.getOriginalPrefix();
-        String suffix = variablePattern.getOriginalSuffix();
-        if (!expectedVarName.startsWith(prefix))
-            return false;
-        if (!expectedVarName.endsWith(suffix))
-            return false;
+        // bookmarkStartByNode
+        Map<Node, CTBookmark> bookmarkStartByNode = new HashMap<Node, CTBookmark>();
+        for (CTBookmark bookmark : paragraph.getCTP().getBookmarkStartList()) {
+            Node node = bookmark.getDomNode();
+            bookmarkStartByNode.put(node, bookmark);
+        }
 
-        BigInteger bookmarkId = startBookmark.getId();
-        if (!bookmarkId.equals(endBookmark.getId()))
-            return false;
+        // bookmarkEndByNode
+        Map<Node, CTMarkupRange> bookmarkEndByNode = new HashMap<Node, CTMarkupRange>();
+        for (CTMarkupRange bookmark : paragraph.getCTP().getBookmarkEndList()) {
+            Node node = bookmark.getDomNode();
+            bookmarkEndByNode.put(node, bookmark);
+        }
 
-        String actualVarName = getDecodedVarName(startBookmark, endBookmark, keysHolder);
+        Node node = run.getCTR().getDomNode();
 
-        return expectedVarName.equals(actualVarName);
+        // bookmarkStartById
+        Map<BigInteger, CTBookmark> bookmarkStartById = new LinkedHashMap<BigInteger, CTBookmark>();
+        {
+            Node prevNode = node.getPreviousSibling();
+            while (prevNode != null) {
+                CTBookmark bookmarkStart = bookmarkStartByNode.get(prevNode);
+                if (bookmarkStart != null) {
+                    bookmarkStartById.put(bookmarkStart.getId(), bookmarkStart);
+                }
+                prevNode = prevNode.getPreviousSibling();
+            }
+        }
+
+        // bookmarkEndById
+        Map<BigInteger, CTMarkupRange> bookmarkEndById = new HashMap<BigInteger, CTMarkupRange>();
+        {
+            Node nextNode = node.getNextSibling();
+            while (nextNode != null) {
+                CTMarkupRange bookmarkEnd = bookmarkEndByNode.get(nextNode);
+                if (bookmarkEnd != null) {
+                    bookmarkEndById.put(bookmarkEnd.getId(), bookmarkEnd);
+                }
+                nextNode = nextNode.getNextSibling();
+            }
+        }
+
+        // retain only ended bookmarks
+        bookmarkStartById.keySet().retainAll(bookmarkEndById.keySet());
+
+        // collect variable bookmarks
+        for (Entry<BigInteger, CTBookmark> e : bookmarkStartById.entrySet()) {
+            BigInteger id = e.getKey();
+            CTBookmark bookmarkStart = e.getValue();
+            CTMarkupRange bookmarkEnd = bookmarkEndById.get(id);
+
+            if (bookmarkStart == null)
+                continue;
+            if (bookmarkEnd == null)
+                continue;
+
+            String varName = getDecodedVarName(bookmarkStart, bookmarkEnd, keysHolder);
+            if (varName == null)
+                continue;
+
+            VariableBookmark varBookmark = new VariableBookmark(varName, id, bookmarkStart, bookmarkEnd);
+            varBookmarks.add(varBookmark);
+        }
+
+        return varBookmarks;
+    }
+
+    /**
+     * Find bookmarks used as meta information for variables into the {@code paragraph}.
+     *
+     * @param run
+     * @param keysHolder
+     * @return
+     */
+    List<VariableBookmark> getVariableBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
+        List<VariableBookmark> varBookmarks = new ArrayList<VariableBookmark>();
+
+        // bookmarkStartById
+        Map<BigInteger, CTBookmark> bookmarkStartById = new LinkedHashMap<BigInteger, CTBookmark>();
+        for (CTBookmark bookmark : paragraph.getCTP().getBookmarkStartList()) {
+            BigInteger id = bookmark.getId();
+            bookmarkStartById.put(id, bookmark);
+        }
+
+        // bookmarkEndById
+        Map<BigInteger, CTMarkupRange> bookmarkEndById = new HashMap<BigInteger, CTMarkupRange>();
+        for (CTMarkupRange bookmark : paragraph.getCTP().getBookmarkEndList()) {
+            BigInteger id = bookmark.getId();
+            bookmarkEndById.put(id, bookmark);
+        }
+
+        // retain only ended bookmarks
+        bookmarkStartById.keySet().retainAll(bookmarkEndById.keySet());
+
+        // collect variable bookmarks
+        for (Entry<BigInteger, CTBookmark> e : bookmarkStartById.entrySet()) {
+            BigInteger id = e.getKey();
+            CTBookmark bookmarkStart = e.getValue();
+            CTMarkupRange bookmarkEnd = bookmarkEndById.get(id);
+
+            if (bookmarkStart == null)
+                continue;
+            if (bookmarkEnd == null)
+                continue;
+
+            String varName = getDecodedVarName(bookmarkStart, bookmarkEnd, keysHolder);
+            if (varName == null)
+                continue;
+
+            VariableBookmark varBookmark = new VariableBookmark(varName, id, bookmarkStart, bookmarkEnd);
+            varBookmarks.add(varBookmark);
+        }
+
+        return varBookmarks;
     }
 
     /**
@@ -319,79 +419,244 @@ public class DocumentMetaProcessor {
 
         // add bookmark to end of paragraph
         CTP ctp = paragraph.getCTP();
-        CTBookmark startBookmark = ctp.addNewBookmarkStart();
-        startBookmark.setId(id);
-        setEncodedBookmarkName(startBookmark, varName);
+        CTBookmark bookmarkStart = ctp.addNewBookmarkStart();
+        bookmarkStart.setId(id);
+        setEncodedBookmarkName(bookmarkStart, varName);
 
-        CTMarkupRange endBookmark = ctp.addNewBookmarkEnd();
-        endBookmark.setId(id);
+        CTMarkupRange bookmarkEnd = ctp.addNewBookmarkEnd();
+        bookmarkEnd.setId(id);
 
         // move bookmark to actual run
         Node paragraphNode = ctp.getDomNode();
         Node runNode = run.getCTR().getDomNode();
-        Node startBookmarkNode = startBookmark.getDomNode();
-        Node endBookmarkNode = endBookmark.getDomNode();
+        Node bookmarkStartNode = bookmarkStart.getDomNode();
+        Node bookmarkEndNode = bookmarkEnd.getDomNode();
 
-        paragraphNode.insertBefore(startBookmarkNode, runNode);
-        paragraphNode.insertBefore(endBookmarkNode, runNode.getNextSibling());
+        paragraphNode.insertBefore(bookmarkStartNode, runNode);
+        paragraphNode.insertBefore(bookmarkEndNode, runNode.getNextSibling());
     }
 
     /**
-     * Replace every run between {@code w:bookmarkStart} and {@code w:bookmarkEnd} with the variable name.
+     * Replace content of variable run between all {@code w:bookmarkStart} and {@code w:bookmarkEnd} with the variable
+     * name. All other runs inside variable bookmarks will be removed.
      *
      * @param paragraph
      * @param keys
      * @param variablePattern
      */
     void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
-        List<CTBookmark> bookmarkStartList = paragraph.getCTP().getBookmarkStartList();
-        Map<Node, CTBookmark> bookmarkStartByNode = new HashMap<Node, CTBookmark>();
-        for (CTBookmark bookmark : bookmarkStartList) {
-            Node node = bookmark.getDomNode();
-            bookmarkStartByNode.put(node, bookmark);
+        List<VariableBookmark> varBookmarks = getVariableBookmarks(paragraph, keysHolder);
+        for (VariableBookmark varBookmark : varBookmarks) {
+            clearVariableBookmark(paragraph, varBookmark, keysHolder);
         }
+    }
 
-        List<CTMarkupRange> bookmarkEndList = paragraph.getCTP().getBookmarkEndList();
-        Map<Node, CTMarkupRange> bookmarkEndByNode = new HashMap<Node, CTMarkupRange>();
-        for (CTMarkupRange bookmark : bookmarkEndList) {
-            Node node = bookmark.getDomNode();
-            bookmarkEndByNode.put(node, bookmark);
-        }
+    /**
+     * Replace content of variable run between {@code w:bookmarkStart} and {@code w:bookmarkEnd} with the variable name.
+     * All other runs inside variable bookmark will be removed.
+     *
+     * @param paragraph
+     * @param varBookmark
+     * @param keysHolder
+     */
+    void clearVariableBookmark(XWPFParagraph paragraph, VariableBookmark varBookmark, KeysHolder keysHolder) {
+        Node paragraphNode = paragraph.getCTP().getDomNode();
+        if (!containsInNode(paragraphNode, varBookmark))
+            return;
 
-        for (XWPFRun run : paragraph.getRuns()) {
-            Node node = run.getCTR().getDomNode();
-            Node prevNode = node.getPreviousSibling();
-            Node nextNode = node.getNextSibling();
-            CTBookmark startBookmark = bookmarkStartByNode.get(prevNode);
-            CTMarkupRange endBookmark = bookmarkEndByNode.get(nextNode);
-            String varName = getDecodedVarName(startBookmark, endBookmark, keysHolder);
-            if (varName != null) {
-                // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
-                // bookmark id, so bookmark name must be updated
-                setEncodedBookmarkName(startBookmark, varName);
-                run.setText(varName, 0);
+        CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
+        CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
+
+        // find variable run
+        XWPFRun varRun;
+        {
+            List<XWPFRun> runs = paragraph.getRuns();
+            int varRunIndex = getVariableRunIndex(paragraph, varBookmark);
+            int firstRunIndex = getFirstRunIndex(paragraph, varBookmark);
+            if (firstRunIndex != -1) {
+                // varRun must be first run inside bookmark
+                if (varRunIndex == -1) {
+                    throw new IllegalStateException("Incorrect index of variable Run");
+                }
+                varRun = runs.get(varRunIndex);
+                XWPFRun firstRun = runs.get(firstRunIndex);
+                if (varRunIndex != firstRunIndex) {
+                    applyStyle(varRun, firstRun);
+                }
+                varRun = firstRun;
+            } else {
+                // bookmark doesn't contains any run, so we must create new
+                if (varRunIndex != -1) {
+                    throw new IllegalStateException("Incorrect index of variable Run");
+                }
+                int nextRunIndex = getNextRunIndex(paragraph, varBookmark);
+                varRun = paragraph.insertNewRun(nextRunIndex);
+
+                // move bookmark to actual run
+                Node varRunNode = varRun.getCTR().getDomNode();
+                Node bookmarkStartNode = bookmarkStart.getDomNode();
+                Node bookmarkEndNode = bookmarkEnd.getDomNode();
+
+                paragraphNode.insertBefore(bookmarkStartNode, varRunNode);
+                paragraphNode.insertBefore(bookmarkEndNode, varRunNode.getNextSibling());
             }
         }
+
+        // remove all runs except run with variable
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = runs.size() - 1; i >= 0; i--) {
+            XWPFRun r = runs.get(i);
+            if (r.equals(varRun))
+                continue;
+            Node n = r.getCTR().getDomNode();
+            if (containsInVariableBookmark(varBookmark, n))
+                paragraph.removeRun(i);
+        }
+
+        // after editing document in office (Libre, MS) id in bookmark name will be differ from actual
+        // bookmark id, so bookmark name must be updated too
+        String varName = varBookmark.getVarName();
+        setEncodedBookmarkName(bookmarkStart, varName);
+        varRun.setText(varName, 0);
+    }
+
+    boolean containsInNode(Node node, VariableBookmark varBookmark) {
+        CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
+        CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
+        Node bookmarkStartNode = bookmarkStart.getDomNode();
+        Node bookmarkEndNode = bookmarkEnd.getDomNode();
+
+        if (!containsInNode(node, bookmarkStartNode))
+            return false;
+        if (!containsInNode(node, bookmarkEndNode))
+            return false;
+
+        return true;
+    }
+
+    boolean containsInNode(Node container, Node node) {
+        NodeList childNodes = container.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node child = childNodes.item(i);
+            if (child.equals(node))
+                return true;
+            if (containsInNode(child, node))
+                return true;
+        }
+        return false;
+    }
+
+    boolean containsInVariableBookmark(VariableBookmark varBookmark, Node node) {
+        CTBookmark bookmarkStart = varBookmark.getBookmarkStart();
+        CTMarkupRange bookmarkEnd = varBookmark.getBookmarkEnd();
+        Node bookmarkStartNode = bookmarkStart.getDomNode();
+        Node bookmarkEndNode = bookmarkEnd.getDomNode();
+
+        if (isBeforeNode(bookmarkStartNode, node))
+            return false;
+        if (isAfterNode(bookmarkEndNode, node))
+            return false;
+
+        return true;
+    }
+
+    boolean isBeforeNode(Node source, Node target) {
+        Node prevNode = source.getPreviousSibling();
+        while (prevNode != null) {
+            if (prevNode.equals(target))
+                return true;
+            prevNode = prevNode.getPreviousSibling();
+        }
+        return false;
+    }
+
+    boolean isAfterNode(Node source, Node target) {
+        Node nextNode = source.getNextSibling();
+        while (nextNode != null) {
+            if (nextNode.equals(target))
+                return true;
+            nextNode = nextNode.getNextSibling();
+        }
+        return false;
+    }
+
+    int getVariableRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+        String varName = varBookmark.getVarName();
+
+        int index = -1;
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = 0; i < runs.size(); i++) {
+            XWPFRun run = runs.get(i);
+            Node node = run.getCTR().getDomNode();
+            if (!containsInVariableBookmark(varBookmark, node))
+                continue;
+            if (index == -1) {
+                index = i;
+            } else {
+                String text = run.getText(0);
+                if (varName.equals(text)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+
+        return index;
+    }
+
+    int getFirstRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = 0; i < runs.size(); i++) {
+            XWPFRun run = runs.get(i);
+            Node node = run.getCTR().getDomNode();
+            if (!containsInVariableBookmark(varBookmark, node))
+                continue;
+            return i;
+        }
+        return -1;
+    }
+
+    int getNextRunIndex(XWPFParagraph paragraph, VariableBookmark varBookmark) {
+        List<XWPFRun> runs = paragraph.getRuns();
+        int size = runs.size();
+        int nextIndex = size;
+        for (int i = size - 1; i >= 0; i--) {
+            XWPFRun run = runs.get(i);
+            Node node = run.getCTR().getDomNode();
+            if (!containsInVariableBookmark(varBookmark, node)) {
+                if (nextIndex == i + 1) {
+                    nextIndex = i;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        if (nextIndex == 0) {
+            nextIndex = size;
+        }
+        return nextIndex;
     }
 
     /**
      * Extract decoded variable name from bookmark name.
      *
-     * @param startBookmark
+     * @param bookmarkStart
      * @param keysHolder
      * @return
      */
-    String getDecodedVarName(CTBookmark startBookmark, CTMarkupRange endBookmark, KeysHolder keysHolder) {
-        if (startBookmark == null)
+    String getDecodedVarName(CTBookmark bookmarkStart, CTMarkupRange bookmarkEnd, KeysHolder keysHolder) {
+        if (bookmarkStart == null)
             return null;
-        if (endBookmark == null)
-            return null;
-
-        BigInteger bookmarkId = startBookmark.getId();
-        if (!bookmarkId.equals(endBookmark.getId()))
+        if (bookmarkEnd == null)
             return null;
 
-        String bookmarkName = startBookmark.getName();
+        BigInteger bookmarkId = bookmarkStart.getId();
+        if (!bookmarkId.equals(bookmarkEnd.getId()))
+            return null;
+
+        String bookmarkName = bookmarkStart.getName();
         Matcher matcher = bookmarkNamePattern.matcher(bookmarkName);
         if (matcher.matches()) {
             String encodedVarName = matcher.group(2);
