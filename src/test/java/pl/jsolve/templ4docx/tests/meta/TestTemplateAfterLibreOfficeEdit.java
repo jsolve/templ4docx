@@ -17,11 +17,11 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestTemplateAfterLibreOfficeEdit {
+public class TestTemplateAfterLibreOfficeEdit extends AbstractMetaTest {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template-processed-edited-in-libre-office";
+        String templateFileName = "meta/template-processed-edited-in-libre-office";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);

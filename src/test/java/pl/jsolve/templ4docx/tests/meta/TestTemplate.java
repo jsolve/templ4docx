@@ -17,11 +17,11 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestTemplate {
+public class TestTemplate extends AbstractMetaTest {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "template";
+        String templateFileName = "meta/template";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);

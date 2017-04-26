@@ -18,11 +18,11 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestRepeatedVariables {
+public class TestRepeatedVariables extends AbstractMetaTest {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "repeated-variables";
+        String templateFileName = "meta/repeated-variables";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);

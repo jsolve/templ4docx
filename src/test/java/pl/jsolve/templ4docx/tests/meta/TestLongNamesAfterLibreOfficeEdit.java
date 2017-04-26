@@ -19,11 +19,11 @@ import pl.jsolve.templ4docx.variable.Variables;
  * @author indvd00m
  *
  */
-public class TestLongNamesAfterLibreOfficeEdit {
+public class TestLongNamesAfterLibreOfficeEdit extends AbstractMetaTest {
 
     @Test
     public void test() throws IOException {
-        String templateFileName = "long-names-processed-edited-in-libre-office";
+        String templateFileName = "meta/long-names-processed-edited-in-libre-office";
         InputStream is = getClass().getClassLoader().getResourceAsStream(templateFileName + ".docx");
 
         Docx docx = new Docx(is);
