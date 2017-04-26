@@ -14,6 +14,8 @@ import pl.jsolve.templ4docx.variable.TextVariable;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
+ * MS Office has limitations of bookmark names length and content ({@code ^(?!\d)\w{1,40}$}). So we need test this.
+ *
  * @author indvd00m
  *
  */
