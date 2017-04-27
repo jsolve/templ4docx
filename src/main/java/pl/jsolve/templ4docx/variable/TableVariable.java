@@ -54,6 +54,8 @@ public class TableVariable implements Variable {
                 keys.add(new Key(((ImageVariable) firstVariable).getKey(), VariableType.IMAGE));
             } else if (firstVariable instanceof BulletListVariable) {
                 keys.add(new Key(((BulletListVariable) firstVariable).getKey(), VariableType.BULLET_LIST));
+            } else if (firstVariable instanceof ObjectVariable) {
+                keys.add(new Key(((ObjectVariable) firstVariable).getKey(), VariableType.OBJECT));
             } else if (firstVariable instanceof TableVariable) {
                 keys.addAll(extract(((TableVariable) firstVariable).getVariables()));
             }
@@ -83,6 +85,10 @@ public class TableVariable implements Variable {
                 }
             } else if (firstVariable instanceof BulletListVariable) {
                 if (key.equals(((BulletListVariable) firstVariable).getKey())) {
+                    return true;
+                }
+            } else if (firstVariable instanceof ObjectVariable) {
+                if (key.equals(((ObjectVariable) firstVariable).getKey())) {
                     return true;
                 }
             } else if (firstVariable instanceof TableVariable) {
@@ -115,6 +121,10 @@ public class TableVariable implements Variable {
                 }
             } else if (firstVariable instanceof BulletListVariable) {
                 if (key.getKey().equals(((BulletListVariable) firstVariable).getKey())) {
+                    return variable.get(index);
+                }
+            } else if (firstVariable instanceof ObjectVariable) {
+                if (key.getKey().equals(((ObjectVariable) firstVariable).getKey())) {
                     return variable.get(index);
                 }
             } else if (firstVariable instanceof TableVariable) {

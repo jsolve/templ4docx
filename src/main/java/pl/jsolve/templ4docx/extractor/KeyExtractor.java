@@ -8,6 +8,7 @@ import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
 import pl.jsolve.templ4docx.variable.BulletListVariable;
 import pl.jsolve.templ4docx.variable.ImageVariable;
+import pl.jsolve.templ4docx.variable.ObjectVariable;
 import pl.jsolve.templ4docx.variable.TableVariable;
 import pl.jsolve.templ4docx.variable.TextVariable;
 import pl.jsolve.templ4docx.variable.Variables;
@@ -43,6 +44,10 @@ public class KeyExtractor {
 
         for (Entry<String, BulletListVariable> entry : variables.getBulletListVariables().entrySet()) {
             keys.add(new Key(entry.getKey(), VariableType.BULLET_LIST));
+        }
+
+        for (Entry<String, ObjectVariable> entry : variables.getObjectVariables().entrySet()) {
+            keys.add(new Key(entry.getKey(), VariableType.OBJECT));
         }
 
         return keys;

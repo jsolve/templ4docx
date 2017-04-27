@@ -1,9 +1,9 @@
 package pl.jsolve.templ4docx.core;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
@@ -150,6 +150,10 @@ public class Docx implements Serializable {
      */
     public XWPFDocument getXWPFDocument() {
         return docx;
+    }
+
+    public VariablePattern getVariablePattern() {
+        return variablePattern;
     }
 
 }

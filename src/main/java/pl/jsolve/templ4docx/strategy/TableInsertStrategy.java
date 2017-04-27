@@ -13,6 +13,7 @@ import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
 import pl.jsolve.templ4docx.insert.BulletListInsert;
 import pl.jsolve.templ4docx.insert.ImageInsert;
 import pl.jsolve.templ4docx.insert.Insert;
+import pl.jsolve.templ4docx.insert.ObjectInsert;
 import pl.jsolve.templ4docx.insert.TableCellInsert;
 import pl.jsolve.templ4docx.insert.TableRowInsert;
 import pl.jsolve.templ4docx.insert.TextInsert;
@@ -115,6 +116,8 @@ public class TableInsertStrategy implements InsertStrategy {
             return new ImageInsert(key, findParagraph(cell, key.getKey()));
         case BULLET_LIST:
             return new BulletListInsert(key, findParagraph(cell, key.getKey()), cell, null);
+        case OBJECT:
+            return new ObjectInsert(key, findParagraph(cell, key.getKey()));
         }
         return null;
     }
