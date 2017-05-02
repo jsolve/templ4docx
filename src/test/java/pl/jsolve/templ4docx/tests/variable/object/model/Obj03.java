@@ -1,7 +1,7 @@
 package pl.jsolve.templ4docx.tests.variable.object.model;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class Obj03 {

@@ -5,7 +5,7 @@ import java.io.File;
 import org.junit.Before;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class AbstractVariableObjectTest {

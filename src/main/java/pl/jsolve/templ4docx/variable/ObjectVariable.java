@@ -12,7 +12,7 @@ import pl.jsolve.templ4docx.core.VariablePattern;
 import pl.jsolve.templ4docx.utils.ReflectionHelper;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class ObjectVariable implements Variable {

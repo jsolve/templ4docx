@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class ReflectionHelper {

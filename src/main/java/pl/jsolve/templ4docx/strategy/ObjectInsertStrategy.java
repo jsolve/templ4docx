@@ -9,7 +9,7 @@ import pl.jsolve.templ4docx.variable.ObjectVariable;
 import pl.jsolve.templ4docx.variable.Variable;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class ObjectInsertStrategy implements InsertStrategy {
