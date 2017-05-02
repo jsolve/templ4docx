@@ -16,7 +16,7 @@ import pl.jsolve.templ4docx.variable.Variables;
 /**
  * MS Office do not allow empty content inside of {@code bookmarkStart} and {@code bookmarkEnd} tags.
  *
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class TestEmptyMetaAfterMSOfficeEdit extends AbstractMetaTest {

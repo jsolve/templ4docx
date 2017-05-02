@@ -16,7 +16,7 @@ import pl.jsolve.templ4docx.variable.Variables;
 /**
  * MS Office has limitations of bookmark names length and content ({@code ^(?!\d)\w{1,40}$}). So we need test this.
  *
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class TestLongNamesAfterLibreOfficeEdit extends AbstractMetaTest {

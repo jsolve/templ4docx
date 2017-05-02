@@ -15,7 +15,7 @@ import pl.jsolve.templ4docx.variable.Variables;
 
 /**
  *
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class TestRepeatedVariables extends AbstractMetaTest {

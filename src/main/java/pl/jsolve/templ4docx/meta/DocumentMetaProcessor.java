@@ -58,7 +58,7 @@ import pl.jsolve.templ4docx.variable.Variables;
  * {@code DocumentExecutor} will update variable values as usual.
  * </p>
  *
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class DocumentMetaProcessor {

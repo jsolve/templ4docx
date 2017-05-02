@@ -14,7 +14,7 @@ import pl.jsolve.templ4docx.variable.TextVariable;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class TestInvalidMetaAfterLibreOfficeEdit extends AbstractMetaTest {

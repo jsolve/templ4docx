@@ -11,7 +11,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import pl.jsolve.templ4docx.util.Key;
 
 /**
- * @author indvd00m
+ * @author indvd00m (gotoindvdum[at]gmail[dot]com)
  *
  */
 public class KeysHolder {
