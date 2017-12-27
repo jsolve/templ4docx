@@ -18,6 +18,7 @@ import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
 import pl.jsolve.templ4docx.insert.BulletListInsert;
 import pl.jsolve.templ4docx.insert.ImageInsert;
 import pl.jsolve.templ4docx.insert.Insert;
+import pl.jsolve.templ4docx.insert.ObjectInsert;
 import pl.jsolve.templ4docx.insert.TableCellInsert;
 import pl.jsolve.templ4docx.insert.TableRowInsert;
 import pl.jsolve.templ4docx.insert.TextInsert;
@@ -116,6 +117,9 @@ public class VariableFinder {
                     if (cell != null) {
                         inserts.add(new TableCellInsert(key, cell));
                     }
+                    break;
+                case OBJECT:
+                    inserts.add(new ObjectInsert(key, paragraph));
                     break;
                 }
             }

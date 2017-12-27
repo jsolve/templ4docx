@@ -13,12 +13,14 @@ public class Variables {
     private Map<String, ImageVariable> imageVariables;
     private List<TableVariable> tableVariables;
     private Map<String, BulletListVariable> bulletListVariables;
+    private Map<String, ObjectVariable> objectVariables;
 
     public Variables() {
         this.textVariables = new HashMap<String, TextVariable>();
         this.imageVariables = new HashMap<String, ImageVariable>();
         this.tableVariables = new ArrayList<TableVariable>();
         this.bulletListVariables = new HashMap<String, BulletListVariable>();
+        this.objectVariables = new HashMap<String, ObjectVariable>();
     }
 
     public TextVariable addTextVariable(TextVariable textVariable) {
@@ -39,6 +41,16 @@ public class Variables {
         return bulletListVariable;
     }
 
+    public List<ObjectVariable> addObjectVariable(ObjectVariable objectVariable) {
+        List<ObjectVariable> tree = new ArrayList<ObjectVariable>();
+        tree.add(objectVariable);
+        tree.addAll(objectVariable.getFieldVariablesTree());
+        for (ObjectVariable var : tree) {
+            this.objectVariables.put(var.getKey(), var);
+        }
+        return tree;
+    }
+
     public Map<String, TextVariable> getTextVariables() {
         return textVariables;
     }
@@ -53,6 +65,10 @@ public class Variables {
 
     public Map<String, BulletListVariable> getBulletListVariables() {
         return bulletListVariables;
+    }
+
+    public Map<String, ObjectVariable> getObjectVariables() {
+        return objectVariables;
     }
 
     public Variable getVariable(Key key) {
@@ -72,6 +88,8 @@ public class Variables {
             break;
         case BULLET_LIST:
             return bulletListVariables.get(key.getKey());
+        case OBJECT:
+            return objectVariables.get(key.getKey());
         }
         return null; // TODO: throw exception
     }

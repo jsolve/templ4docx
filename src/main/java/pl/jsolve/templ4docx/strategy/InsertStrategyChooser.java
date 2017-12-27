@@ -3,7 +3,6 @@ package pl.jsolve.templ4docx.strategy;
 import pl.jsolve.templ4docx.cleaner.ParagraphCleaner;
 import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
 import pl.jsolve.templ4docx.insert.Insert;
-import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.variable.Variable;
 import pl.jsolve.templ4docx.variable.Variables;
 
@@ -13,6 +12,7 @@ public class InsertStrategyChooser {
     private ImageInsertStrategy imageInsertStrategy;
     private TableInsertStrategy tableInsertStrategy;
     private BulletListInsertStrategy bulletListInsertStrategy;
+    private ObjectInsertStrategy objectInsertStrategy;
     private Variables variables;
 
     public InsertStrategyChooser(Variables variables, TableRowCleaner tableRowCleaner, ParagraphCleaner paragraphCleaner) {
@@ -20,6 +20,7 @@ public class InsertStrategyChooser {
         this.imageInsertStrategy = new ImageInsertStrategy();
         this.tableInsertStrategy = new TableInsertStrategy(variables, this, tableRowCleaner);
         this.bulletListInsertStrategy = new BulletListInsertStrategy(this, paragraphCleaner);
+        this.objectInsertStrategy = new ObjectInsertStrategy();
         this.variables = variables;
     }
 
@@ -36,6 +37,9 @@ public class InsertStrategyChooser {
             break;
         case BULLET_LIST:
             bulletListInsertStrategy.insert(insert, variable);
+            break;
+        case OBJECT:
+            objectInsertStrategy.insert(insert, variable);
             break;
         }
     }

@@ -118,8 +118,8 @@ public class DocumentCleaner {
                     List<Integer> prefixIndexesOf = Strings.indexesOf(text, prefix);
                     if (!prefixIndexesOf.isEmpty() && Strings.indexesOf(text, variablePattern.getSuffix()).isEmpty()) {
                         notRecognizedVariableStartIndex = i;
-                        notRecognizedVariable = text;
                         notRecognizedPrefix = text.substring(prefixIndexesOf.get(prefixIndexesOf.size() - 1));
+                        notRecognizedVariable = notRecognizedPrefix;
                     }
                 }
             }
