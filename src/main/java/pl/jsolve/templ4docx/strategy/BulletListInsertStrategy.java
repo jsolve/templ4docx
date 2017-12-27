@@ -10,12 +10,14 @@ import pl.jsolve.templ4docx.cleaner.ParagraphCleaner;
 import pl.jsolve.templ4docx.insert.BulletListInsert;
 import pl.jsolve.templ4docx.insert.ImageInsert;
 import pl.jsolve.templ4docx.insert.Insert;
+import pl.jsolve.templ4docx.insert.ObjectInsert;
 import pl.jsolve.templ4docx.insert.ParagraphInsert;
 import pl.jsolve.templ4docx.insert.TextInsert;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
 import pl.jsolve.templ4docx.variable.BulletListVariable;
 import pl.jsolve.templ4docx.variable.ImageVariable;
+import pl.jsolve.templ4docx.variable.ObjectVariable;
 import pl.jsolve.templ4docx.variable.TextVariable;
 import pl.jsolve.templ4docx.variable.Variable;
 
@@ -83,6 +85,9 @@ public class BulletListInsertStrategy implements InsertStrategy {
         if (variableToInsert instanceof BulletListVariable) {
             return new BulletListInsert(new Key(key.getKey(), VariableType.BULLET_LIST), paragraph,
                     originalInsert.getCellParent(), originalInsert.getDocumentParent());
+        }
+        if (variableToInsert instanceof ObjectVariable) {
+            return new ObjectInsert(new Key(key.getKey(), VariableType.OBJECT), paragraph);
         }
 
         return null;

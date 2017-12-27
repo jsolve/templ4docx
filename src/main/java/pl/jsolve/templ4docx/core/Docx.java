@@ -175,6 +175,10 @@ public class Docx implements Serializable {
 
     public void setProcessMetaInformation(boolean processMetaInformation) {
         this.processMetaInformation = processMetaInformation;
+
+    public VariablePattern getVariablePattern() {
+        return variablePattern;
+
     }
 
 }
