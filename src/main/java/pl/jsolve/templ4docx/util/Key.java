@@ -1,8 +1,7 @@
 package pl.jsolve.templ4docx.util;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import pl.jsolve.sweetener.collection.Collections;
 
 public class Key {
 
@@ -13,7 +12,7 @@ public class Key {
     public Key(String key, VariableType variableType) {
         this.key = key;
         this.variableType = variableType;
-        this.subKeys = Collections.newArrayList();
+        this.subKeys = new ArrayList<Key>();
     }
 
     public String getKey() {

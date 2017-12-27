@@ -1,10 +1,10 @@
 package pl.jsolve.templ4docx.insert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
-import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
 
@@ -22,7 +22,7 @@ public class TableRowInsert extends Insert {
 
     public TableRowInsert() {
         super(new Key("", VariableType.TABLE));
-        this.cellInserts = Collections.newArrayList();
+        this.cellInserts = new ArrayList<TableCellInsert>();
     }
 
     public void add(TableCellInsert cellInsert) {

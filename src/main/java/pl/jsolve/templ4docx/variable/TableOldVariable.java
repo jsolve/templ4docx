@@ -1,12 +1,13 @@
 package pl.jsolve.templ4docx.variable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import pl.jsolve.sweetener.collection.Collections;
-import pl.jsolve.sweetener.collection.Maps;
 import pl.jsolve.templ4docx.exception.IncorrectNumberOfRowsException;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
@@ -20,9 +21,9 @@ public class TableOldVariable implements Variable {
     private int numberOfRows = 0;
 
     public TableOldVariable() {
-        textVariables = Maps.newHashMap();
-        imageVariables = Maps.newHashMap();
-        bulletListVariables = Maps.newHashMap();
+        textVariables = new HashMap<String, List<TextVariable>>();
+        imageVariables = new HashMap<String, List<ImageVariable>>();
+        bulletListVariables = new HashMap<String, List<BulletListVariable>>();
     }
 
     public void addTextVariables(String key, List<String> textVariables) {
@@ -50,7 +51,7 @@ public class TableOldVariable implements Variable {
     }
 
     private List<TextVariable> convert(String key, List<String> values) {
-        List<TextVariable> textValues = Collections.newArrayList();
+        List<TextVariable> textValues = new ArrayList<TextVariable>();
         for (String value : values) {
             textValues.add(new TextVariable(key, value));
         }
@@ -118,7 +119,7 @@ public class TableOldVariable implements Variable {
     }
 
     public Set<Key> getKeys() {
-        Set<Key> keys = Collections.newHashSet();
+        Set<Key> keys = new HashSet<Key>();
         generateKeys(keys, textVariables.keySet(), VariableType.TEXT);
         generateKeys(keys, imageVariables.keySet(), VariableType.IMAGE);
         generateKeys(keys, bulletListVariables.keySet(), VariableType.BULLET_LIST);

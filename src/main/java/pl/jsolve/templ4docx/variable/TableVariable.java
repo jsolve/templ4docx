@@ -1,9 +1,10 @@
 package pl.jsolve.templ4docx.variable;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.templ4docx.exception.IncorrectNumberOfRowsException;
 import pl.jsolve.templ4docx.util.Key;
 import pl.jsolve.templ4docx.util.VariableType;
@@ -14,7 +15,7 @@ public class TableVariable implements Variable {
     private int numberOfRows = 0;
 
     public TableVariable() {
-        this.variables = Collections.newArrayList();
+        this.variables = new ArrayList<List<? extends Variable>>();
     }
 
     public int getNumberOfRows() {
@@ -40,7 +41,7 @@ public class TableVariable implements Variable {
     }
 
     private Set<Key> extract(List<List<? extends Variable>> variables) {
-        Set<Key> keys = Collections.newHashSet();
+        Set<Key> keys = new HashSet<Key>();
 
         for (List<? extends Variable> variable : variables) {
             if (variable.isEmpty()) {

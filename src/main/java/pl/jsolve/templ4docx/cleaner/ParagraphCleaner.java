@@ -1,8 +1,8 @@
 package pl.jsolve.templ4docx.cleaner;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import pl.jsolve.sweetener.collection.Collections;
 import pl.jsolve.templ4docx.insert.ParagraphInsert;
 
 /**
@@ -14,7 +14,7 @@ public class ParagraphCleaner {
     private List<ParagraphInsert> paragraphs;
 
     public ParagraphCleaner() {
-        this.paragraphs = Collections.newArrayList();
+        this.paragraphs = new ArrayList<ParagraphInsert>();
     }
 
     /**
