@@ -11,13 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.poi.xwpf.usermodel.IRunBody;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBookmark;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
@@ -30,6 +24,7 @@ import pl.jsolve.templ4docx.core.VariablePattern;
 import pl.jsolve.templ4docx.extractor.KeyExtractor;
 import pl.jsolve.templ4docx.extractor.VariablesExtractor;
 import pl.jsolve.templ4docx.util.Key;
+import pl.jsolve.templ4docx.util.ParagraphUtil;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
@@ -74,42 +69,12 @@ public class DocumentMetaProcessor {
         List<Key> keys = keyExtractor.extractKeys(variables);
         KeysHolder keysHolder = new KeysHolder(keys);
         XWPFDocument document = docx.getXWPFDocument();
-        List<XWPFParagraph> paragraphs = getParagraphs(document);
+        List<XWPFParagraph> paragraphs = ParagraphUtil.getAllParagraphs(document, true);
         for (XWPFParagraph paragraph : paragraphs) {
             moveVariablesToSeparateRun(paragraph, keysHolder, variablePattern);
             markVariablesByBookmarks(paragraph, keysHolder, variablePattern);
             clearVariablesInRunByBookmarks(paragraph, keysHolder);
         }
-    }
-
-    /**
-     * @param document
-     * @return All document paragraphs (including paragraphs in nested tables)
-     */
-    protected List<XWPFParagraph> getParagraphs(XWPFDocument document) {
-        List<XWPFParagraph> paragraphs = new ArrayList<XWPFParagraph>();
-        paragraphs.addAll(document.getParagraphs());
-        for (XWPFTable table : document.getTables()) {
-            paragraphs.addAll(getParagraphs(table));
-        }
-        return paragraphs;
-    }
-
-    /**
-     * @param table
-     * @return All table paragraphs (including paragraphs in nested tables)
-     */
-    protected List<XWPFParagraph> getParagraphs(XWPFTable table) {
-        List<XWPFParagraph> paragraphs = new ArrayList<XWPFParagraph>();
-        for (XWPFTableRow row : table.getRows()) {
-            for (XWPFTableCell cell : row.getTableCells()) {
-                paragraphs.addAll(cell.getParagraphs());
-                for (XWPFTable cellTable : cell.getTables()) {
-                    paragraphs.addAll(getParagraphs(cellTable));
-                }
-            }
-        }
-        return paragraphs;
     }
 
     /**
@@ -394,7 +359,7 @@ public class DocumentMetaProcessor {
      */
     protected BigInteger getMaxBookmarkId(XWPFDocument document) {
         BigInteger maxId = new BigInteger("0");
-        for (XWPFParagraph paragraph : document.getParagraphs()) {
+        for (XWPFParagraph paragraph : ParagraphUtil.getAllParagraphs(document, true)) {
             CTP ctp = paragraph.getCTP();
             for (CTBookmark bookmark : ctp.getBookmarkStartList()) {
                 BigInteger id = bookmark.getId();

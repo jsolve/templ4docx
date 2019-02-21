@@ -19,6 +19,7 @@ import pl.jsolve.templ4docx.insert.TableRowInsert;
 import pl.jsolve.templ4docx.insert.TextInsert;
 import pl.jsolve.templ4docx.strategy.InsertStrategyChooser;
 import pl.jsolve.templ4docx.util.Key;
+import pl.jsolve.templ4docx.util.ParagraphUtil;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
@@ -49,27 +50,9 @@ public class VariableFinder {
     public List<Insert> find(XWPFDocument document, Variables variables) {
         List<Insert> inserts = new ArrayList<Insert>();
         List<Key> keys = keyExtractor.extractKeys(variables);
-        for (XWPFParagraph paragraph : document.getParagraphs()) {
+        for (XWPFParagraph paragraph : ParagraphUtil.getAllParagraphs(document, true)) {
             inserts.addAll(find(paragraph, document, null, keys));
         }
-
-        for (XWPFHeader header : document.getHeaderList()) {
-            for (XWPFParagraph paragraph : header.getParagraphs()) {
-                inserts.addAll(find(paragraph, document, null, keys));
-            }
-
-            findInTables(inserts, header.getTables(), keys);
-        }
-
-        for (XWPFFooter footer : document.getFooterList()) {
-            for (XWPFParagraph paragraph : footer.getParagraphs()) {
-                inserts.addAll(find(paragraph, document, null, keys));
-            }
-
-            findInTables(inserts, footer.getTables(), keys);
-        }
-
-        findInTables(inserts, document.getTables(), keys);
 
         mergeTableInserts(inserts, variables);
         return inserts;
