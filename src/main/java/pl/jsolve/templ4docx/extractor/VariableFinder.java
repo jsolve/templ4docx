@@ -6,12 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.poi.xwpf.usermodel.*;
 
 import pl.jsolve.templ4docx.cleaner.ParagraphCleaner;
 import pl.jsolve.templ4docx.cleaner.TableRowCleaner;
@@ -56,6 +51,22 @@ public class VariableFinder {
         List<Key> keys = keyExtractor.extractKeys(variables);
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             inserts.addAll(find(paragraph, document, null, keys));
+        }
+
+        for (XWPFHeader header : document.getHeaderList()) {
+            for (XWPFParagraph paragraph : header.getParagraphs()) {
+                inserts.addAll(find(paragraph, document, null, keys));
+            }
+
+            findInTables(inserts, header.getTables(), keys);
+        }
+
+        for (XWPFFooter footer : document.getFooterList()) {
+            for (XWPFParagraph paragraph : footer.getParagraphs()) {
+                inserts.addAll(find(paragraph, document, null, keys));
+            }
+
+            findInTables(inserts, footer.getTables(), keys);
         }
 
         findInTables(inserts, document.getTables(), keys);
