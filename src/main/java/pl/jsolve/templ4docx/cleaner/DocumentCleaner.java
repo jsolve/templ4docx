@@ -3,17 +3,14 @@ package pl.jsolve.templ4docx.cleaner;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.poi.xwpf.usermodel.*;
 
 import pl.jsolve.sweetener.text.Strings;
 import pl.jsolve.templ4docx.core.Docx;
 import pl.jsolve.templ4docx.core.VariablePattern;
 import pl.jsolve.templ4docx.extractor.KeyExtractor;
 import pl.jsolve.templ4docx.util.Key;
+import pl.jsolve.templ4docx.util.ParagraphUtil;
 import pl.jsolve.templ4docx.variable.Variables;
 
 /**
@@ -36,11 +33,9 @@ public class DocumentCleaner {
      */
     public void clean(Docx docx, Variables variables, VariablePattern variablePattern) {
         List<Key> keys = keyExtractor.extractKeys(variables);
-        for (XWPFParagraph paragraph : docx.getXWPFDocument().getParagraphs()) {
+        for (XWPFParagraph paragraph : ParagraphUtil.getAllParagraphs(docx.getXWPFDocument(), true)) {
             clean(paragraph.getRuns(), keys, variablePattern);
         }
-
-        cleanTables(docx.getXWPFDocument().getTables(), keys, variablePattern);
     }
 
     /**
