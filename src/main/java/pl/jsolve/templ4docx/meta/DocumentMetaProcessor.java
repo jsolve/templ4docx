@@ -81,7 +81,7 @@ public class DocumentMetaProcessor {
      * Split every variable into separate run.
      *
      * @param paragraph
-     * @param keys
+     * @param keysHolder
      * @param variablePattern
      */
     protected void moveVariablesToSeparateRun(XWPFParagraph paragraph, KeysHolder keysHolder,
@@ -177,7 +177,7 @@ public class DocumentMetaProcessor {
      * Every variable in separate run will by marked by bookmark.
      *
      * @param paragraph
-     * @param keys
+     * @param keysHolder
      * @param variablePattern
      */
     protected void markVariablesByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder,
@@ -307,7 +307,7 @@ public class DocumentMetaProcessor {
     /**
      * Find bookmarks used as meta information for variables into the {@code paragraph}.
      *
-     * @param run
+     * @param paragraph
      * @param keysHolder
      * @return
      */
@@ -420,8 +420,7 @@ public class DocumentMetaProcessor {
      * name. All other runs inside variable bookmarks will be removed.
      *
      * @param paragraph
-     * @param keys
-     * @param variablePattern
+     * @param keysHolder
      */
     protected void clearVariablesInRunByBookmarks(XWPFParagraph paragraph, KeysHolder keysHolder) {
         List<VariableBookmark> varBookmarks = getVariableBookmarks(paragraph, keysHolder);

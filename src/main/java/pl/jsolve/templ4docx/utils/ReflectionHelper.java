@@ -74,8 +74,7 @@ public class ReflectionHelper {
      * @param object
      * @param field
      * @return the field value of an object
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
+     * @throws RuntimeException
      */
     public static Object getFieldValue(Object object, Field field) {
         try {
@@ -91,10 +90,9 @@ public class ReflectionHelper {
 
     /**
      * @param object
-     * @param field
+     * @param fieldName
      * @return the field value of an object
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
+     * @throws RuntimeException
      */
     public static Object getFieldValue(Object object, String fieldName) {
         Collection<Field> fields = getFields(object);
